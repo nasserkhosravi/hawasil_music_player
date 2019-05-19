@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <TextView
+        android:id="@+id/tvHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:padding="10dp"
+        android:text="You'r purchased songs from \nhawasil appears here"
+        android:textColor="#6E7284"
+        android:textSize="15sp"
+        />
+
+    <ImageView
+        android:id="@+id/imgHawasil"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_centerInParent="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_store_mall_directory_black_24dp"
+        android:tint="#6E7284"
+        />
+
+    <TextView
+        android:id="@+id/lblNotInstalled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imgHawasil"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:text="Hawasil is \nnot installed"
+        android:textColor="#6E7284"
+        android:textSize="25sp"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblNotInstalled"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:background="@drawable/dr_hawasil_bubble_item"
+        android:padding="10dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="Install me"
+        android:textColor="@color/hawasil_enabled_color"
+        android:textSize="20sp"
+        />
+
+</RelativeLayout>

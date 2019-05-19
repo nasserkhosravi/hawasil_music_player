@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layoutRoot"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="@color/white"
+    android:visibility="gone"
+    >
+
+    <FrameLayout
+        android:id="@+id/flFilled"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_horizontal_clipper"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
+        >
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imgUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:paddingStart="20dp"
+            android:paddingTop="15dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="15dp"
+            android:tint="@color/second"
+            app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp"
+            />
+
+        <TextView
+            android:id="@+id/tvSongTitle"
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/imgPlayStatus"
+            android:layout_toEndOf="@id/imgUp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:maxLines="1"
+            android:paddingTop="10dp"
+            android:text="song name"
+            android:textColor="@color/second"
+            android:textSize="15sp"
+            />
+
+        <TextView
+            android:id="@+id/tvArtist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvSongTitle"
+            android:layout_centerHorizontal="true"
+            android:layout_toStartOf="@+id/imgPlayStatus"
+            android:layout_toEndOf="@id/imgUp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:paddingTop="0dp"
+            android:text="artist name"
+            android:textColor="@color/second_l1"
+            />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imgPlayStatus"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:src="@drawable/ic_play_circle_filled_black_24dp"
+            android:tint="@color/main"
+            />
+    </RelativeLayout>
+
+
+</RelativeLayout>

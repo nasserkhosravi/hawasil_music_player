@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/crdShadow"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dr_corner_white"
+        >
+
+        <ImageView
+            android:id="@+id/imgFolder"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_artist"
+            android:tint="@color/second"
+            />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/imgMore"
+            android:layout_toEndOf="@+id/imgFolder"
+            android:text="@string/Title"
+            android:textColor="@color/second"
+            android:textSize="18sp"
+            />
+
+        <ImageView
+            android:id="@+id/imgMore"
+            style="@style/imgMore"
+            />
+    </RelativeLayout>
+
+</com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="toolbar_icon_size">30dp</dimen>
+    <dimen name="default_shadow_radius">2dp</dimen>
+    <dimen name="enabled_shadow_radius">5dp</dimen>
+</resources>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorAccent"
+    >
+
+    <com.gauravk.bubblenavigation.BubbleNavigationLinearView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#fff"
+        android:orientation="horizontal"
+        app:bnc_mode="inside"
+        >
+
+        <com.gauravk.bubblenavigation.BubbleToggleView
+            android:id="@+id/itemLibrary"
+            style="@style/bubbleNavigationItem"
+            app:bt_active="true"
+            app:bt_icon="@drawable/ic_music"
+            app:bt_title="@string/Library"
+            />
+
+        <com.gauravk.bubblenavigation.BubbleToggleView
+            android:id="@+id/itemFavorite"
+            style="@style/bubbleNavigationItem"
+            android:visibility="gone"
+            app:bt_icon="@drawable/ic_favorite_black_24dp"
+            app:bt_title="@string/Favorite"
+            />
+
+        <com.gauravk.bubblenavigation.BubbleToggleView
+            android:id="@+id/itemFolder"
+            style="@style/bubbleNavigationItem"
+            app:bt_icon="@drawable/ic_folder_black_24dp"
+            app:bt_title="@string/Folder"
+            />
+
+        <com.gauravk.bubblenavigation.BubbleToggleView
+            android:id="@+id/itemSearch"
+            style="@style/bubbleNavigationItem"
+            app:bt_icon="@drawable/ic_search_black_24dp"
+            app:bt_title="@string/Search"
+            />
+
+        <com.gauravk.bubblenavigation.BubbleToggleView
+            android:id="@+id/itemHawasil"
+            style="@style/bubbleNavigationItem"
+
+            app:bt_colorActive="@color/hawasil_enabled_color"
+            app:bt_colorInactive="@color/navigation_disable"
+            app:bt_icon="@drawable/ic_store_mall_directory_black_24dp"
+            app:bt_shape="@drawable/dr_hawasil_bubble_item"
+            app:bt_shapeColor="@color/navigation_background_hawasil_enable"
+            app:bt_title="@string/Hawasil"
+            />
+        <!--<item name="bt_colorActive">@color/navigation_enable</item>-->
+        <!--<item name="bt_colorInactive">@color/navigation_disable</item>-->
+        <!--<item name="bt_shape">@drawable/dr_default_shape_bubble_item</item>-->
+        <!--<item name="bt_shapeColor">@color/colorAccent</item>-->
+
+
+    </com.gauravk.bubblenavigation.BubbleNavigationLinearView>
+
+</FrameLayout>

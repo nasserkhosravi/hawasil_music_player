@@ -1,0 +1,119 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!--color primary used for TaskDescription color-->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.DefaultTextView" parent="android:Widget.TextView">
+        <item name="android:fontFamily">sans-serif-light</item>
+    </style>
+
+    <style name="tvHeaderLibrary">
+        <item name="android:textSize">30sp</item>
+        <item name="android:textColor">@color/second</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginStart">20dp</item>
+        <item name="android:layout_marginEnd">20dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="bubbleNavigationItem">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+
+        <item name="bt_colorActive">@color/navigation_enable</item>
+        <item name="bt_colorInactive">@color/navigation_disable</item>
+        <item name="bt_shape">@drawable/dr_default_shape_bubble_item</item>
+        <item name="bt_shapeColor">@color/colorAccent</item>
+
+        <item name="bt_startPadding">16dp</item>
+        <item name="bt_endPadding">16dp</item>
+        <item name="bt_topPadding">8dp</item>
+        <item name="bt_bottomPadding">8dp</item>
+
+        <item name="bt_titlePadding">10dp</item>
+        <item name="bt_titleSize">15sp</item>
+
+        <item name="bt_iconWidth">30dp</item>
+        <item name="bt_iconHeight">30dp</item>
+    </style>
+
+    <style name="crdBase">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="elevation">4dp</item>
+        <item name="cardCornerRadius">1dp</item>
+        <!--<item name="cardUseCompatPadding">true</item>-->
+    </style>
+
+    <style name="crdShadow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="sl_shadowed">true</item>
+        <item name="sl_shadow_radius">@dimen/default_shadow_radius</item>
+        <item name="android:layout_marginStart">5dp</item>
+        <item name="android:layout_marginEnd">5dp</item>
+        <item name="sl_shadow_color">@color/default_shadow</item>
+    </style>
+
+    <style name="imgPlayerControlButton" parent="imgVectorBase">
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:layout_marginEnd">10dp</item>
+        <item name="android:layout_width">42dp</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:layout_gravity">center_vertical</item>
+
+    </style>
+
+    <style name="imgVectorBase">
+        <item name="android:scaleType">fitXY</item>
+    </style>
+
+    <style name="imgMore">
+        <item name="android:layout_width">42dp</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:layout_alignParentEnd">true</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_marginEnd">5dp</item>
+        <item name="android:layout_marginStart">5dp</item>
+        <item name="android:scaleType">fitXY</item>
+        <item name="android:tint">@color/second</item>
+        <item name="android:src">@drawable/ic_more_vert_black_24dp</item>
+    </style>
+
+    <style name="imgPlayList">
+        <item name="android:layout_width">30dp</item>
+        <item name="android:layout_height">30dp</item>
+    </style>
+
+    <style name="imgSetting">
+        <item name="android:layout_width">@dimen/toolbar_icon_size</item>
+        <item name="android:layout_height">@dimen/toolbar_icon_size</item>
+        <item name="android:layout_margin">10dp</item>
+        <item name="android:scaleType">fitXY</item>
+    </style>
+
+    <style name="tvRvHeader">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:textSize">17sp</item>
+    </style>
+
+    <style name="imgPreviewPlayList">
+        <item name="android:layout_width">80dp</item>
+        <item name="android:layout_height">80dp</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+
+</resources>

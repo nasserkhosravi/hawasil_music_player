@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <ImageView
+        style="@style/imgSetting"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/ic_settings_black_24dp"
+        />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            android:id="@+id/tvAlbums"
+            style="@style/tvHeaderLibrary"
+            android:text="@string/Albums"
+            />
+
+        <TextView
+            android:id="@+id/tvArtists"
+            style="@style/tvHeaderLibrary"
+            android:text="@string/Artists"
+            />
+
+        <TextView
+            android:id="@+id/tvSongs"
+            style="@style/tvHeaderLibrary"
+            android:text="@string/Songs"
+            />
+
+        <TextView
+            android:id="@+id/tvPlayLists"
+            style="@style/tvHeaderLibrary"
+            android:text="@string/PlayLists"
+            />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSongs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+    </LinearLayout>
+
+</RelativeLayout>

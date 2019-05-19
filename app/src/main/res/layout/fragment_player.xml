@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/default_background"
+    >
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imgFavorite"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_margin="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_favorite_border_black_24dp"
+        />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imgUp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_alignParentStart="true"
+        android:layout_margin="20dp"
+        android:rotation="180"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp"
+        app:tint="@color/second"
+        />
+
+    <FrameLayout
+        android:id="@+id/layoutL2"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        >
+
+        <FrameLayout
+            android:id="@+id/flL1"
+            android:layout_width="270dp"
+            android:layout_height="270dp"
+            android:layout_gravity="center"
+            >
+
+            <ImageView
+                android:id="@+id/imgPlayer"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                />
+        </FrameLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutSongController"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutL2"
+        >
+
+        <TextView
+            android:id="@+id/tvSongTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Balabar"
+            android:textColor="@color/second"
+            />
+
+        <TextView
+            android:id="@+id/tvArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Taham"
+            android:textColor="@color/second_l1"
+            />
+
+        <RelativeLayout
+            android:id="@+id/layoutTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            >
+
+            <TextView
+                android:id="@+id/tvCurrentDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="@color/second_l1"
+                />
+
+            <TextView
+                android:id="@+id/tvDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="3:10"
+                android:textColor="@color/second_l1"
+                />
+
+            <SeekBar
+                android:id="@+id/skbTimeline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tvDuration"
+                android:layout_marginTop="2dp"
+                android:progress="30"
+                android:progressTint="@color/main"
+                android:thumbTint="@color/white"
+                />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            >
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgPrevious"
+                style="@style/imgPlayerControlButton"
+                app:srcCompat="@drawable/ic_fast_rewind_black_24dp"
+                app:tint="@color/main_60"
+                />
+
+            <com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:sl_shadow_radius="5dp"
+                >
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/imgPlayStatus"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:background="@drawable/dr_circle_white"
+                    android:backgroundTint="@android:color/white"
+                    android:padding="13dp"
+                    android:tint="@color/main"
+                    app:srcCompat="@drawable/ic_play_arrow_black_24dp"
+                    />
+
+            </com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout>
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgNext"
+                style="@style/imgPlayerControlButton"
+                app:srcCompat="@drawable/ic_skip_next_black_24dp"
+                app:tint="@color/main_60"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imgShuffle"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutSongController"
+        app:srcCompat="@drawable/ic_shuffle_black_24dp"
+        app:tint="@color/second_l1"
+        />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imgRepeat"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutSongController"
+        app:srcCompat="@drawable/ic_repeat_black_24dp"
+        />
+</androidx.constraintlayout.widget.ConstraintLayout>

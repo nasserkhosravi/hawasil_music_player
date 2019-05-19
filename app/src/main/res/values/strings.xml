@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">hawasil music player</string>
+
+    <string name="TEMPLATE_artist_album_song"> %s - %s </string>
+    <string name="TEMPLATE_song_count">%d song</string>
+
+    <string name="Artists">Artists</string>
+    <string name="Albums">Albums</string>
+    <string name="Songs">Songs</string>
+    <string name="PlayLists">Play list</string>
+    <string name="Artist_name">Artist name</string>
+    <string name="Song_name">Song name</string>
+    <string name="Title">Title</string>
+    <string name="Duration">Duration</string>
+    <string name="Count">Count</string>
+    <string name="Library">Library</string>
+    <string name="Favorite">Favorite</string>
+    <string name="Folder">Folder</string>
+    <string name="Search">Search</string>
+    <string name="Hawasil">Hawasil</string>
+</resources>

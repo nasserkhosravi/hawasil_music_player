@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">@color/main</color>
+    <color name="colorPrimaryDark">@color/main_60</color>
+    <color name="colorAccent">@color/main_60</color>
+
+    <color name="second">#333C54</color>
+    <color name="second_l1">#777A87</color>
+    <color name="duration_color">#A9ACB8</color>
+    <color name="black">#000</color>
+
+    <color name="main">#A11550</color>
+    <color name="main_15">#26A11550</color>
+    <color name="main_20">#33A11550</color>
+    <color name="main_60">#99A11550</color>
+
+    <color name="mini_seekbar">#1AFB2A81</color>
+    <!--<color name="mini_seekbar">@color/main</color>-->
+    <color name="default_shadow">#26000000</color>
+
+    <color name="navigation_enable">@color/main</color>
+    <color name="navigation_disable">#777A87</color>
+    <color name="navigation_background_enable">@color/main_15</color>
+    <color name="navigation_background_disable">#FFFFFF</color>
+
+    <color name="default_background">#F6F6F6</color>
+    <color name="favorite">@color/main</color>
+    <color name="edit_search">#E5EBF8</color>
+    <color name="enabled_item">@color/main</color>
+
+    <color name="navigation_background_hawasil_enable">#404B15A1</color>
+    <color name="hawasil_enabled_color">#6330CF</color>
+</resources>

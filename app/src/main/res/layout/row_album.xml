@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/crdShadow"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dr_corner_white"
+        >
+
+        <ImageView
+            android:id="@+id/imgThumb"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="10dp"
+            android:src="@drawable/art_balabar"
+            />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_toEndOf="@+id/imgThumb"
+            android:text="@string/Song_name"
+            android:textColor="@color/second"
+            android:textStyle="bold"
+            />
+
+        <TextView
+            android:id="@+id/tvArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvTitle"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_toEndOf="@+id/imgThumb"
+            android:text="@string/Artist_name"
+            android:textColor="@color/second_l1"
+            />
+
+        <ImageView
+            android:id="@+id/imgMore"
+            style="@style/imgMore"
+            />
+    </RelativeLayout>
+
+</com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout>
