@@ -5,12 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.hawasilmusicplayer.R
-import com.nasserkhosravi.hawasilmusicplayer.data.FolderCache
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaProvider
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.FolderAdapter
+import com.nasserkhosravi.hawasilmusicplayer.viewmodel.FoldersViewModel
 import kotlinx.android.synthetic.main.fragment_folder.*
 
 class FoldersFragment : Fragment(), BaseComponentAdapter.ItemClickListener {
@@ -21,13 +22,17 @@ class FoldersFragment : Fragment(), BaseComponentAdapter.ItemClickListener {
         return inflater.inflate(R.layout.fragment_folder, container, false)
     }
 
+    private lateinit var viewModel: FoldersViewModel
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        MediaProvider.checkCacheFoldersContainSong()
-        val items = FolderCache.flats
-        adapter.items = items
+        viewModel = ViewModelProviders.of(this).get(FoldersViewModel::class.java)
+        viewModel.getFolders.observe(this, Observer {
+            adapter.items = it
+            rvFolder.adapter = adapter
+
+        })
         adapter.itemClickListener = this
-        rvFolder.adapter = adapter
         rvFolder.layoutManager = LinearLayoutManager(context)
     }
 

@@ -6,13 +6,14 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.widget.SeekBar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.palette.graphics.Palette
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -22,13 +23,10 @@ import com.nasserkhosravi.hawasilmusicplayer.FormatUtils
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.safeDispose
 import com.nasserkhosravi.hawasilmusicplayer.app.setOnClickListeners
-import com.nasserkhosravi.hawasilmusicplayer.data.QueueBrain
-import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
-import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
+import com.nasserkhosravi.hawasilmusicplayer.viewmodel.SongPlayerViewModel
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_player.*
-import java.io.FileNotFoundException
 
 class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
     override val layoutRes: Int
@@ -39,58 +37,47 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
     private var newSongPlayObserver: Disposable? = null
     private var songCompletedObserver: Disposable? = null
     private var songStatusObserver: Disposable? = null
-    private var progressObserver: Disposable? = null
+    private lateinit var viewModel: SongPlayerViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //seek bar has un wanted padding and we don't want it's padding
+//        seek bar has un wanted padding and we don't want it's padding
         skbTimeline.setPadding(0, 0, 0, 0)
 
-        val model = QueueBrain.getSelected()!!
-        setModelInView(model)
+        viewModel = ViewModelProviders.of(this).get(SongPlayerViewModel::class.java)
+        viewModel.getRepeat.observe(this, Observer {
+            refreshImgRepeat(it)
+        })
+        viewModel.getShuffle.observe(this, Observer {
+            refreshImgShuffle(it)
+        })
+        viewModel.getSongPassed.observe(this, Observer {
+            refreshTimeInfo(it)
+        })
+
+        newSongPlayObserver = viewModel.getNewSongEvent().subscribe {
+            setSongInfoInView(it!!)
+        }
+        songStatusObserver = viewModel.getSongStatusEvent().subscribe {
+            viewModel.registerTimeReporting()
+            refreshStatusView(it.isPlay())
+        }
+        songCompletedObserver = viewModel.getSongCompleteEvent().subscribe {
+            refreshStatusView(false)
+            //code smell
+            refreshTimeInfo(0)
+            viewModel.unRegisterTimeReporting()
+        }
+
+        val model = viewModel.getCurrentSong()
+        setSongInfoInView(model)
         UIUtils.filterColor(imgFavorite, R.color.favorite)
         setOnClickListeners(this, imgPlayStatus, imgFavorite, imgUp, imgPrevious, imgNext, imgShuffle, imgRepeat)
 
-        newSongPlayObserver = SongEventPublisher.newSongPlay.subscribe {
-            setModelInView(it!!)
-        }
-        songStatusObserver = SongEventPublisher.songStatusChange.subscribe {
-            checkButtonStatusView(it)
-        }
-        songCompletedObserver = SongEventPublisher.songComplete.subscribe {
-            checkButtonStatusView(SongStatus.PAUSE)
-//            progressObserver?.dispose()
-            refreshDynamicTimeInfo(model)
-        }
-        refreshImgShuffle()
-        refreshImgRepeat()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        activity?.findViewById<View>(R.id.flPlayer)!!.visibility = View.VISIBLE
-        activity?.findViewById<View>(R.id.layoutBody)!!.visibility = View.GONE
-    }
-
-    override fun onStop() {
-        super.onStop()
-        activity?.findViewById<View>(R.id.flPlayer)!!.visibility = View.GONE
-        activity?.findViewById<View>(R.id.layoutBody)!!.visibility = View.VISIBLE
-    }
-
-    private fun setModelInView(model: SongModel) {
-        tvSongTitle.text = model.title
-        tvArtist.text = model.artist
-        tvDuration.text = model.getFormatDuration()
-        skbTimeline.max = model.duration.toInt()
-        refreshDynamicTimeInfo(model)
-        //first remove last seek bar listener
-        //then set new
-        skbTimeline.setOnSeekBarChangeListener(null)
         seekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    QueueBrain.seekTo(progress)
+                    viewModel.seekTo(progress)
                 }
             }
 
@@ -98,81 +85,82 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         }
         skbTimeline.setOnSeekBarChangeListener(seekBarChangeListener)
-        if (model.artUri != null) {
-            try {
-                val bitmap = MediaStore.Images.Media.getBitmap(context!!.contentResolver, model.artUri!!)
-                generateAndSetColor(bitmap)
-                Glide.with(this).load(bitmap).apply(RequestOptions.circleCropTransform()).into(imgPlayer)
-            } catch (e: FileNotFoundException) {
-                loadDefaultImage()
-            }
-        } else {
-            loadDefaultImage()
-        }
-        registerReportTimeOfSong(model)
-        checkButtonStatusView(model.status)
     }
 
-    private fun refreshDynamicTimeInfo(model: SongModel) {
-        tvCurrentDuration.text = FormatUtils.milliSeconds(model.songPassed)
-        skbTimeline.progress = model.songPassed.toInt()
+    override fun onStart() {
+        super.onStart()
+//        todo: Code smell
+        activity?.findViewById<View>(R.id.flPlayer)!!.visibility = View.VISIBLE
+        activity?.findViewById<View>(R.id.layoutBody)!!.visibility = View.GONE
     }
 
-    private fun registerReportTimeOfSong(model: SongModel) {
-        progressObserver?.dispose()
-        progressObserver = QueueBrain.playerService!!.progressPublisher.observable.subscribe {
-            skbTimeline.progress = model.songPassed.toInt()
-            tvCurrentDuration.text = FormatUtils.milliSeconds(model.songPassed)
-        }
+    override fun onStop() {
+        super.onStop()
+//        todo: Code smell
+        activity?.findViewById<View>(R.id.flPlayer)!!.visibility = View.GONE
+        activity?.findViewById<View>(R.id.layoutBody)!!.visibility = View.VISIBLE
+    }
+
+    private fun setSongInfoInView(model: SongModel) {
+        tvSongTitle.text = model.title
+        tvArtist.text = model.artist
+        tvDuration.text = model.getFormatDuration()
+        skbTimeline.max = model.duration.toInt()
+        refreshStatusView(model.status.isPlay())
+//        refreshTimeInfo(model.songPassed)
+        val art = viewModel.getArt(context!!)
+        generateColorPalletAndSetIt(art)
+        Glide.with(this).load(art).apply(RequestOptions.circleCropTransform()).into(imgPlayer)
+        viewModel.unRegisterTimeReporting()
+        viewModel.registerTimeReporting()
+    }
+
+    private fun refreshTimeInfo(songPassed: Long) {
+        skbTimeline.progress = songPassed.toInt()
+        tvCurrentDuration.text = FormatUtils.milliSeconds(songPassed)
     }
 
     override fun onClick(v: View) {
         when (v.id) {
             R.id.imgPlayStatus -> {
-                QueueBrain.reversePlay()
+                viewModel.reversePlay()
             }
             R.id.imgUp -> {
                 fragmentManager?.popBackStack()
             }
             R.id.imgPrevious -> {
-                QueueBrain.playPrevious()
+                viewModel.playPrevious()
             }
             R.id.imgNext -> {
-                QueueBrain.playNext()
+                viewModel.playNext()
             }
             R.id.imgRepeat -> {
-                QueueBrain.toggleRepeat()
-                refreshImgRepeat()
+                viewModel.toggleRepeat()
             }
             R.id.imgShuffle -> {
-                QueueBrain.toggleShuffle()
-                refreshImgShuffle()
+                viewModel.toggleShuffle()
             }
         }
     }
 
-    private fun refreshImgRepeat() {
-        if (QueueBrain.data.isEnableRepeat) {
+    private fun refreshImgRepeat(isEnable: Boolean) {
+        if (isEnable) {
             UIUtils.filterColor(imgRepeat, R.color.main)
         } else {
             UIUtils.filterColor(imgRepeat, R.color.second)
         }
     }
 
-    private fun refreshImgShuffle() {
-        if (QueueBrain.data.isShuffle) {
+    private fun refreshImgShuffle(isEnable: Boolean) {
+        if (isEnable) {
             UIUtils.filterColor(imgShuffle, R.color.main)
         } else {
             UIUtils.filterColor(imgShuffle, R.color.second)
         }
     }
 
-    private fun loadDefaultImage() {
-        Glide.with(this).load(R.drawable.art_balabar).apply(RequestOptions.circleCropTransform()).into(imgPlayer)
-    }
-
-    private fun checkButtonStatusView(songStatus: SongStatus) {
-        if (songStatus.isPlay()) {
+    private fun refreshStatusView(isPlay: Boolean) {
+        if (isPlay) {
             imgPlayStatus.setImageResource(R.drawable.ic_pause_black_24dp)
         } else {
             imgPlayStatus.setImageResource(R.drawable.ic_play_arrow_black_24dp)
@@ -182,11 +170,12 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         skbTimeline.setOnSeekBarChangeListener(null)
-        safeDispose(seekBarObserver, newSongPlayObserver, songCompletedObserver, songStatusObserver, progressObserver)
+        viewModel.unRegisterTimeReporting()
+        safeDispose(seekBarObserver, newSongPlayObserver, songCompletedObserver, songStatusObserver)
         setOnClickListeners(null, imgPlayStatus, imgFavorite, imgUp, imgPrevious, imgNext, imgShuffle, imgRepeat, imgPlayStatus)
     }
 
-    private fun generateAndSetColor(bitmap: Bitmap) {
+    private fun generateColorPalletAndSetIt(bitmap: Bitmap) {
         Palette.from(bitmap).generate { palette ->
             //some images may not contain some profile color: like light vibrant,be careful
             val colorL1 = ColorUtils.setAlphaComponent(palette!!.mutedSwatch!!.rgb, 60)

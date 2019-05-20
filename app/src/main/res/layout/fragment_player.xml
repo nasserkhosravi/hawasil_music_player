@@ -113,7 +113,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/tvDuration"
                 android:layout_marginTop="2dp"
-                android:progress="30"
+                android:progress="0"
                 android:progressTint="@color/main"
                 android:thumbTint="@color/white"
                 />

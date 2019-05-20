@@ -47,7 +47,7 @@ class SearchFragment : BaseComponentFragment() {
     private fun updateItems(text: String) {
         songAdapter.items = MediaProvider.getSongs().filter { it.title.contains(text, true) }
 //        albumAdapter.items = MediaProvider.getAlbums().filter { it.title.contains(text, true) }
-        artistAdapter.items = MediaProvider.getAllArtists().filter { it.title.contains(text, true) }
+        artistAdapter.items = MediaProvider.getArtists().filter { it.title.contains(text, true) }
 
         songAdapter.notifyDataSetChanged()
 //        albumAdapter.notifyDataSetChanged()

@@ -162,3 +162,33 @@ object MyRes {
         return AppContext.get().resources.getDimension(dim)
     }
 }
+
+class TimeMeasure {
+    private var start = 0L
+    private var end = 0L
+
+    fun start() {
+        if (start == 0L) {
+            start = System.currentTimeMillis()
+        }
+    }
+
+    fun end() {
+        if (end == 0L) {
+            end = System.currentTimeMillis()
+        }
+    }
+
+    fun reset() {
+        start = 0
+        end = 0
+    }
+
+    fun getDiff(): Long {
+        return end - start
+    }
+
+    fun printDiff(tag: String) {
+        Log.d(tag, "${getDiff()}")
+    }
+}

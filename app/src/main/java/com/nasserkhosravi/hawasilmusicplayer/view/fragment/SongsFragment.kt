@@ -2,13 +2,14 @@ package com.nasserkhosravi.hawasilmusicplayer.view.fragment
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaProvider
-import com.nasserkhosravi.hawasilmusicplayer.data.QueueBrain
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.SongAdapter
+import com.nasserkhosravi.hawasilmusicplayer.viewmodel.SongsViewModel
 import kotlinx.android.synthetic.main.fragment_songs.*
 import kotlinx.android.synthetic.main.inc_toolbar.*
 
@@ -18,12 +19,16 @@ class SongsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLis
         get() = R.layout.fragment_songs
 
     private val adapter = SongAdapter()
+    private lateinit var viewModel: SongsViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProviders.of(this).get(SongsViewModel::class.java)
+        viewModel.getSongs.observe(this, Observer {
+            adapter.items = it
+            rvSongs.adapter = adapter
+        })
         adapter.itemClickListener = this
-        adapter.items = MediaProvider.getSongs()
-        rvSongs.adapter = adapter
         rvSongs.layoutManager = LinearLayoutManager(context)
         tvTitle.text = getString(R.string.Songs)
         imgBack.setOnClickListener {
@@ -36,7 +41,7 @@ class SongsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLis
             R.id.imgMore -> {
             }
             else -> {
-                QueueBrain.checkNewQueueRequest(adapter.items!!, position, "${context!!.packageName}.songList")
+                viewModel.onSongClick(position)
                 adapter.makeThisSelect(position)
             }
         }

@@ -22,6 +22,7 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
     var searchFragment: SearchFragment? = null
     var hawasilFragment: HawasilFragment? = null
     var foldersFragment: FoldersFragment? = null
+    val navigationFragment: NavigationFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +44,7 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
 
         PermissionUtils.requestPhoneState(this)
         PermissionUtils.requestWritePermission(this)
-        window.statusBarColor = ResHelper.getColorRes(R.color.default_background)
+//        window.statusBarColor = ResHelper.getColorRes(R.color.default_background)
 
         val navigationFragment = NavigationFragment.newInstance()
         navigationFragment.listener = this
@@ -76,11 +77,8 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
     override fun onDestroy() {
         super.onDestroy()
         UserPref.rememberQueueData(QueueBrain.data)
-        foldersFragment = null
-        libraryFragment = null
-        searchFragment = null
-        hawasilFragment = null
-        miniPlayerFragment = null
+        flMiniPlayer.setOnClickListener(null)
+        navigationFragment?.listener = null
     }
 
     override fun onNavigationChanged(view: View, p1: Int) {

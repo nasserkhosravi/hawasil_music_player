@@ -2,12 +2,14 @@ package com.nasserkhosravi.hawasilmusicplayer.view.fragment
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaProvider
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.AlbumAdapter
+import com.nasserkhosravi.hawasilmusicplayer.viewmodel.AlbumsViewModel
 import kotlinx.android.synthetic.main.fragment_albums.*
 import kotlinx.android.synthetic.main.inc_toolbar.*
 
@@ -16,14 +18,16 @@ class AlbumsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLi
         get() = R.layout.fragment_albums
 
     private val adapter = AlbumAdapter()
+    private lateinit var viewModel: AlbumsViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        adapter.items = MediaProvider.getAlbums()
+        viewModel = ViewModelProviders.of(this).get(AlbumsViewModel::class.java)
+        viewModel.getAlbums.observe(this, Observer {
+            adapter.items = it
+            rvAlbums.adapter = adapter
+        })
         adapter.itemClickListener = this
-
-        rvAlbums.adapter = adapter
         rvAlbums.layoutManager = LinearLayoutManager(context)
 
         tvTitle.text = getString(R.string.Albums)

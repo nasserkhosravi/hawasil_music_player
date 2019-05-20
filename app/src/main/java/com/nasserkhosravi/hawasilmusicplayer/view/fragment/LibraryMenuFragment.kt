@@ -17,6 +17,7 @@ class LibraryMenuFragment : BaseComponentFragment(), View.OnClickListener {
     }
 
     override fun onClick(v: View) {
+//        todo: code smell -> [parentFragment]
         (parentFragment as LibraryNavigatorFragment).onClick(v)
     }
 

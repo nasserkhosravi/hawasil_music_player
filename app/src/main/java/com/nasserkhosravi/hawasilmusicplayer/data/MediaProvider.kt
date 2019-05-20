@@ -9,12 +9,15 @@ import android.provider.BaseColumns
 import android.provider.MediaStore
 import android.provider.MediaStore.Audio.*
 import com.nasserkhosravi.appcomponent.AppContext
-import com.nasserkhosravi.hawasilmusicplayer.data.model.*
+import com.nasserkhosravi.hawasilmusicplayer.data.model.AlbumModel
+import com.nasserkhosravi.hawasilmusicplayer.data.model.ArtistModel
+import com.nasserkhosravi.hawasilmusicplayer.data.model.PlayListModel
+import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 
 
 object MediaProvider {
 
-    fun getAllArtists(): ArrayList<ArtistModel> {
+    fun getArtists(): ArrayList<ArtistModel> {
         if (ArtistCache.isCached()) {
             return ArrayList(ArtistCache.getObjects()!!)
         } else {
@@ -191,11 +194,11 @@ object MediaProvider {
         return contentResolver().delete(Playlists.EXTERNAL_CONTENT_URI, where, whereVal)
     }
 
-    fun getSongsByFolder(model: FlatFolderModel): ArrayList<SongModel> {
+    fun getSongsByFolder(path: String): ArrayList<SongModel> {
         val result = ArrayList<SongModel>()
         val columns = getAudioColumns()
         val selection = MediaStore.Audio.Media.DATA + " like ? "
-        val args = arrayOf("${model.path}%")
+        val args = arrayOf("$path%")
         val cursor = contentResolver().query(Media.EXTERNAL_CONTENT_URI, columns, selection, args, null)
         if (cursor.moveToFirst()) {
             do {
@@ -219,7 +222,7 @@ object MediaProvider {
         return result
     }
 
-    fun getSongsByAlbum(albumId: Long): List<SongModel> {
+    fun getSongsByAlbum(albumId: Long): ArrayList<SongModel> {
         val result = ArrayList<SongModel>()
         val columns = getAudioColumns()
         val selection = Media.ALBUM_ID + " = ? "
