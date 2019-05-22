@@ -27,7 +27,7 @@ class FoldersViewModel : ViewModel() {
         Single.just("").subscribeOn(Schedulers.io())
             .map {
                 MediaProvider.checkCacheFoldersContainSong()
-                FolderCache.flats
+                FolderCache.flatFolders
             }
             .observeOn(AndroidSchedulers.mainThread()).subscribe({
                 result.value = it

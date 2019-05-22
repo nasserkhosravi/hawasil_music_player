@@ -82,7 +82,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
     override fun onTaskRemoved(rootIntent: Intent?) {
         //if user or system want kill app then force pause song
         QueueBrain.getSelected()!!.status = SongStatus.PAUSE
-        UserPref.rememberQueueData(QueueBrain.data)
+        UserPref.saveQueueData(QueueBrain.data)
         release()
         super.onTaskRemoved(rootIntent)
     }

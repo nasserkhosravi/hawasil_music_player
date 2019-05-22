@@ -5,11 +5,8 @@ import android.provider.MediaStore
 import com.nasserkhosravi.hawasilmusicplayer.data.model.ArtistModel
 
 object ArtistCache {
-    private var artists: HashSet<ArtistModel>? = null
-
-    fun getObjects(): HashSet<ArtistModel>? {
-        return artists
-    }
+    var artists: HashSet<ArtistModel>? = null
+        private set
 
     fun cache(cursor: Cursor) {
         if (artists == null) {

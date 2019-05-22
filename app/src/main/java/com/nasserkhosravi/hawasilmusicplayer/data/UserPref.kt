@@ -2,16 +2,14 @@ package com.nasserkhosravi.hawasilmusicplayer.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.nasserkhosravi.appcomponent.AppContext
 
 object UserPref {
 
-    private var editor: SharedPreferences.Editor
-    private var reader: SharedPreferences = AppContext.get().getSharedPreferences("user_pref", Context.MODE_PRIVATE)
+    //    private lateinit var editor: SharedPreferences.Editor
+    private lateinit var reader: SharedPreferences
 
-    init {
-        editor = reader.edit()
-        editor.apply()
+    fun build(context: Context, name: String) {
+        reader = context.getSharedPreferences(name, Context.MODE_PRIVATE)
     }
 
     fun hasQueue(): Boolean {
@@ -19,19 +17,23 @@ object UserPref {
     }
 
     private fun enableHasQueue() {
-        editor.putBoolean("hasQueue", true).apply()
+        reader.edit().putBoolean("hasQueue", true).apply()
     }
 
-    fun rememberQueueData(data: QueueData) {
-        editor.putString("QueueData", data.toJson()).apply()
+    fun saveQueueData(data: QueueData) {
+        reader.edit().putString("QueueData", data.toJson()).apply()
         enableHasQueue()
     }
 
-    fun restoreQueueData(data: QueueData) {
-        data.fromJson(reader.getString("QueueData", null)!!)
+    fun retrieveQueueData(): QueueData? {
+        val json = reader.getString("QueueData", null)
+        if (json != null) {
+            return QueueData.fromJson(json)
+        }
+        return null
     }
 
     fun clear() {
-        editor.clear().apply()
+        reader.edit().clear().apply()
     }
 }

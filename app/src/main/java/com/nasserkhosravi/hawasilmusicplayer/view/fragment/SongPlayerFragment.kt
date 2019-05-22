@@ -54,6 +54,9 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
         viewModel.getSongPassed.observe(this, Observer {
             refreshTimeInfo(it)
         })
+        viewModel.getFavorite.observe(this, Observer {
+            refreshImgFavorite(it)
+        })
 
         newSongPlayObserver = viewModel.getNewSongEvent().subscribe {
             setSongInfoInView(it!!)
@@ -140,6 +143,9 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
             R.id.imgShuffle -> {
                 viewModel.toggleShuffle()
             }
+            R.id.imgFavorite -> {
+                viewModel.toggleFavorite()
+            }
         }
     }
 
@@ -156,6 +162,14 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
             UIUtils.filterColor(imgShuffle, R.color.main)
         } else {
             UIUtils.filterColor(imgShuffle, R.color.second)
+        }
+    }
+
+    private fun refreshImgFavorite(isEnable: Boolean) {
+        if (isEnable) {
+            imgFavorite.setImageResource(R.drawable.ic_favorite_black_24dp)
+        } else {
+            imgFavorite.setImageResource(R.drawable.ic_favorite_border_black_24dp)
         }
     }
 

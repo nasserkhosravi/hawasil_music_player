@@ -8,28 +8,33 @@ import android.net.Uri
 import android.provider.BaseColumns
 import android.provider.MediaStore
 import android.provider.MediaStore.Audio.*
-import com.nasserkhosravi.appcomponent.AppContext
+import android.util.Log
 import com.nasserkhosravi.hawasilmusicplayer.data.model.AlbumModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.ArtistModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.PlayListModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 
-
 object MediaProvider {
+
+    private lateinit var contentResolver: ContentResolver
+
+    fun setContentResolver(contentResolver: ContentResolver) {
+        this.contentResolver = contentResolver
+    }
 
     fun getArtists(): ArrayList<ArtistModel> {
         if (ArtistCache.isCached()) {
-            return ArrayList(ArtistCache.getObjects()!!)
+            return ArrayList(ArtistCache.artists!!)
         } else {
             val columns = arrayOf(Artists.ARTIST, Artists._ID)
-            val cursor = contentResolver().query(Artists.EXTERNAL_CONTENT_URI, columns, null, null, null)!!
+            val cursor = contentResolver.query(Artists.EXTERNAL_CONTENT_URI, columns, null, null, null)!!
             ArtistCache.cache(cursor)
             cursor.close()
 
-            return if (ArtistCache.getObjects() == null || ArtistCache.getObjects()!!.isEmpty()) {
+            return if (ArtistCache.artists == null || ArtistCache.artists!!.isEmpty()) {
                 arrayListOf()
             } else {
-                ArrayList(ArtistCache.getObjects()!!)
+                ArrayList(ArtistCache.artists!!)
             }
         }
     }
@@ -39,7 +44,7 @@ object MediaProvider {
         val selection: String? = null
         val selectionArgs: Array<String>? = null
         val sortOrder = Media.ALBUM + " ASC"
-        val cursor = contentResolver().query(Albums.EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, sortOrder)
+        val cursor = contentResolver.query(Albums.EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, sortOrder)
         val result = ArrayList<AlbumModel>()
         if (cursor.moveToFirst()) {
             do {
@@ -61,7 +66,7 @@ object MediaProvider {
         val sortOrder = String.format("%s limit 10", BaseColumns._ID)
         val columns =
             getAudioColumns()
-        val cursor = contentResolver().query(Media.EXTERNAL_CONTENT_URI, columns, selection, null, null)!!
+        val cursor = contentResolver.query(Media.EXTERNAL_CONTENT_URI, columns, selection, null, null)!!
         FolderCache.cacheFlats(cursor)
         if (cursor.moveToFirst()) {
             do {
@@ -86,10 +91,6 @@ object MediaProvider {
         return model
     }
 
-    private fun contentResolver(): ContentResolver {
-        return AppContext.get().contentResolver!!
-    }
-
     private fun getARtWorkByAlbumId(albumId: Long): Uri? {
         val artworkUri = Uri.parse("content://media/external/audio/albumart")
         return ContentUris.withAppendedId(artworkUri, albumId)
@@ -99,7 +100,7 @@ object MediaProvider {
         if (!FolderCache.isCached) {
             val selection = Media.IS_MUSIC + "!= 0"
             val columns = arrayOf(Media._ID, Media.DATA, Media.DISPLAY_NAME)
-            val cursor = contentResolver().query(Media.EXTERNAL_CONTENT_URI, columns, selection, null, null)!!
+            val cursor = contentResolver.query(Media.EXTERNAL_CONTENT_URI, columns, selection, null, null)!!
             FolderCache.cacheFlats(cursor)
         }
     }
@@ -111,7 +112,7 @@ object MediaProvider {
             Playlists._ID,
             Playlists.NAME
         )
-        val cursor = contentResolver().query(playlistUri, columns, null, null, null)!!
+        val cursor = contentResolver.query(playlistUri, columns, null, null, null)!!
         if (cursor.moveToFirst()) {
             do {
                 val id = cursor.getLong(cursor.getColumnIndexOrThrow(Playlists._ID))
@@ -126,7 +127,7 @@ object MediaProvider {
 
     private fun getPlayListSongsId(playlistId: Long): ArrayList<Pair<Long, Uri?>> {
         val result = ArrayList<Pair<Long, Uri?>>()
-        val cursor = contentResolver().query(
+        val cursor = contentResolver.query(
             Playlists.Members.getContentUri("external", playlistId),
             arrayOf(Playlists.Members.AUDIO_ID, Playlists.Members.ALBUM_ID), null, null,
             MediaStore.Audio.Playlists.Members.DEFAULT_SORT_ORDER
@@ -145,21 +146,18 @@ object MediaProvider {
 
     /**
      * @param context The [Context] to use.
-     * @param name    The name of the new playlist.
+     * @param playlistName    The playlistName of the new playlist.
      * @return A new playlist ID.
      */
-    fun createPlaylist(name: String): Long {
-        if (name.isNotEmpty()) {
-            val resolver = contentResolver()
+    fun createPlaylist(playlistName: String): Long {
+        if (playlistName.isNotEmpty()) {
             val projection = arrayOf(PlaylistsColumns.NAME)
-            val selection = PlaylistsColumns.NAME + " = '" + name + "'"
-            val cursor = resolver.query(
-                Playlists.EXTERNAL_CONTENT_URI, projection, selection, null, null
-            )
+            val selection = PlaylistsColumns.NAME + " = '" + playlistName + "'"
+            val cursor = contentResolver.query(Playlists.EXTERNAL_CONTENT_URI, projection, selection, null, null)
             if (cursor!!.count <= 0) {
                 val values = ContentValues(1)
-                values.put(PlaylistsColumns.NAME, name)
-                val uri = resolver.insert(
+                values.put(PlaylistsColumns.NAME, playlistName)
+                val uri = contentResolver.insert(
                     MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
                     values
                 )
@@ -174,24 +172,77 @@ object MediaProvider {
     /**
      * @return the number of rows updated.
      */
-    fun renamePlaylist(newPlaylist: String, id: Long): Int {
+    fun renamePlaylist(newPlaylist: String, playlistId: Long): Int {
         if (newPlaylist.isNotEmpty()) {
             val values = ContentValues()
             val where = MediaStore.Audio.Playlists._ID + " =? "
-            val whereVal = arrayOf(id.toString())
+            val whereVal = arrayOf(playlistId.toString())
             values.put(MediaStore.Audio.Playlists.NAME, newPlaylist)
-            return contentResolver().update(Playlists.EXTERNAL_CONTENT_URI, values, where, whereVal)
+            return contentResolver.update(Playlists.EXTERNAL_CONTENT_URI, values, where, whereVal)
         }
         return 0
     }
 
     /**
+     * return id of playlist if exist
+     */
+    fun isExistPlayList(name: String): Long {
+        if (name.isEmpty()) {
+            throw IllegalArgumentException("Name should not be empty")
+        }
+        val projection = arrayOf(Playlists.NAME, Playlists._ID)
+        val selection = PlaylistsColumns.NAME + " = '" + name + "'"
+        val cursor = contentResolver.query(Playlists.EXTERNAL_CONTENT_URI, projection, selection, null, null)
+        if (cursor.moveToFirst()) {
+            return cursor.getLong(cursor.getColumnIndexOrThrow(Playlists._ID))
+        } else {
+            return -1
+        }
+    }
+
+    /**
      * @return The number of rows deleted.
      */
-    fun removePlaylist(id: Long): Int {
+    fun removePlaylist(playlistId: Long): Int {
         val where = MediaStore.Audio.Playlists._ID + " =? "
-        val whereVal = arrayOf(id.toString())
-        return contentResolver().delete(Playlists.EXTERNAL_CONTENT_URI, where, whereVal)
+        val whereVal = arrayOf(playlistId.toString())
+        return contentResolver.delete(Playlists.EXTERNAL_CONTENT_URI, where, whereVal)
+    }
+
+    fun isExistInPlaylist(songId: Long, playlistId: Long): Boolean {
+        val projection = arrayOf(Playlists.Members.TITLE)
+        val where = Playlists.Members.AUDIO_ID + " =? "
+        val args = arrayOf(songId.toString())
+        val uri = Playlists.Members.getContentUri("external", playlistId)
+        val cursor = contentResolver.query(uri, projection, where, args, null)!!
+        return cursor.count > 0
+    }
+
+    fun addToPlayList(songId: Long, playlistId: Long): Boolean {
+        val tracks = getPlaylistTracks(playlistId)
+        val value = ContentValues()
+        value.put(Playlists.Members.AUDIO_ID, songId)
+        value.put(Playlists.Members.PLAY_ORDER, tracks.lastIndex + 1)
+
+        val uri = Playlists.Members.getContentUri("external", playlistId)
+        val insertedUri = contentResolver.insert(uri, value)
+        if (insertedUri == null) {
+            Log.d(tag(), "addToPlayList: failed to add song to play list-> songId:$songId playlistId:$playlistId")
+            return false
+        }
+        return true
+    }
+
+    fun removeFromPlayList(songId: Long, playlistId: Long): Boolean {
+        val where = Playlists.Members._ID + " =? "
+        val args = arrayOf(songId.toString())
+        val uri = Playlists.Members.getContentUri("external", playlistId)
+        val numberOfRow = contentResolver.delete(uri, where, args)
+        if (numberOfRow == -1) {
+            Log.d(tag(), "removeFromPlayList: failed to remove song from play list-> songId:$songId playlistId:$playlistId")
+            return false
+        }
+        return true
     }
 
     fun getSongsByFolder(path: String): ArrayList<SongModel> {
@@ -199,7 +250,7 @@ object MediaProvider {
         val columns = getAudioColumns()
         val selection = MediaStore.Audio.Media.DATA + " like ? "
         val args = arrayOf("$path%")
-        val cursor = contentResolver().query(Media.EXTERNAL_CONTENT_URI, columns, selection, args, null)
+        val cursor = contentResolver.query(Media.EXTERNAL_CONTENT_URI, columns, selection, args, null)
         if (cursor.moveToFirst()) {
             do {
                 result.add(createSongByCursor(cursor))
@@ -213,7 +264,7 @@ object MediaProvider {
         val columns = getAudioColumns()
         val selection = Media.ARTIST_ID + " = ? "
         val args = arrayOf(artistId.toString())
-        val cursor = contentResolver().query(Media.EXTERNAL_CONTENT_URI, columns, selection, args, null)
+        val cursor = contentResolver.query(Media.EXTERNAL_CONTENT_URI, columns, selection, args, null)
         if (cursor.moveToFirst()) {
             do {
                 result.add(createSongByCursor(cursor))
@@ -227,7 +278,7 @@ object MediaProvider {
         val columns = getAudioColumns()
         val selection = Media.ALBUM_ID + " = ? "
         val args = arrayOf(albumId.toString())
-        val cursor = contentResolver().query(Media.EXTERNAL_CONTENT_URI, columns, selection, args, null)
+        val cursor = contentResolver.query(Media.EXTERNAL_CONTENT_URI, columns, selection, args, null)
         if (cursor.moveToFirst()) {
             do {
                 result.add(createSongByCursor(cursor))
@@ -236,12 +287,11 @@ object MediaProvider {
         return result
     }
 
-    fun getPlaylistTracks(playlist_id: Long): ArrayList<SongModel> {
+    fun getPlaylistTracks(playlistId: Long): ArrayList<SongModel> {
         val result = ArrayList<SongModel>()
-        val uri = Playlists.Members.getContentUri("external", playlist_id)
-        val resolver = contentResolver()
+        val uri = Playlists.Members.getContentUri("external", playlistId)
         val columns = getAudioColumns()
-        val cursor = resolver.query(uri, columns, null, null, null)
+        val cursor = contentResolver.query(uri, columns, null, null, null)
         if (cursor.moveToFirst()) {
             do {
                 val model = createSongByCursor(cursor)
@@ -255,4 +305,7 @@ object MediaProvider {
         return arrayOf(Media._ID, Media.DATA, Media.ALBUM_ID, Media.ALBUM, Media.ARTIST, Media.DISPLAY_NAME, Media.DURATION)
     }
 
+    fun tag(): String {
+        return MediaProvider::class.java.simpleName
+    }
 }

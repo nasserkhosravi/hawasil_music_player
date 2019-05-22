@@ -36,6 +36,12 @@ data class PlayListModel(val id: Long, val title: String, val members: ArrayList
         }
         return result
     }
+
+    override fun toString(): String {
+        return "PlayListModel(id=$id, title='$title', members=$members)"
+    }
+
+
 }
 
 enum class QueueType(val id: Int) {

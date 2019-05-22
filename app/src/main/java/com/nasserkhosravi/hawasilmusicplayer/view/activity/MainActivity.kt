@@ -37,14 +37,16 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
             )
         }
         if (UserPref.hasQueue()) {
-            UserPref.restoreQueueData(QueueBrain.data)
+            val queueData = UserPref.retrieveQueueData()
+            if (queueData != null) {
+                QueueBrain.setData(queueData)
+            }
             QueueBrain.data.isSongRestored = true
         }
         QueueBrain.startAndBindService()
 
         PermissionUtils.requestPhoneState(this)
         PermissionUtils.requestWritePermission(this)
-//        window.statusBarColor = ResHelper.getColorRes(R.color.default_background)
 
         val navigationFragment = NavigationFragment.newInstance()
         navigationFragment.listener = this
@@ -76,7 +78,7 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
 
     override fun onDestroy() {
         super.onDestroy()
-        UserPref.rememberQueueData(QueueBrain.data)
+        UserPref.saveQueueData(QueueBrain.data)
         flMiniPlayer.setOnClickListener(null)
         navigationFragment?.listener = null
     }

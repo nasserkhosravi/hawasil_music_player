@@ -15,7 +15,9 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
 
 object QueueBrain {
-    val data = QueueData()
+    var data = QueueData()
+        private set
+
     private var isServiceBound = false
     private var finishObserver: Disposable? = null
     var playerService: MediaPlayerService? = null
@@ -191,6 +193,10 @@ object QueueBrain {
 
     private fun hasNextSong() = data.selectedIndex < data.queue.lastIndex
 
+    fun setData(data: QueueData) {
+        this.data = data
+    }
+
     fun tag(): String {
         return QueueBrain::class.java.simpleName
     }
@@ -216,15 +222,18 @@ class QueueData {
         return App.get().jsonAdapter.toJson(this)
     }
 
-    fun fromJson(json: String) {
-        val fromJson = App.get().jsonAdapter.fromJson(json, QueueData::class.java)
-        selected = fromJson.selected
-        queue.clear()
-        queue.addAll(fromJson.queue)
-        selectedIndex = fromJson.selectedIndex
-        queueId = fromJson.queueId
-        isEnableRepeat = fromJson.isEnableRepeat
-        isShuffle = fromJson.isShuffle
+    companion object {
+        fun fromJson(json: String): QueueData {
+            val fromJson = App.get().jsonAdapter.fromJson(json, QueueData::class.java)
+            val model = QueueData()
+            model.queue.addAll(fromJson.queue)
+            model.selected = fromJson.selected
+            model.isShuffle = fromJson.isShuffle
+            model.selectedIndex = fromJson.selectedIndex
+            model.queueId = fromJson.queueId
+            model.isEnableRepeat = fromJson.isEnableRepeat
+            return model
+        }
     }
 }
 

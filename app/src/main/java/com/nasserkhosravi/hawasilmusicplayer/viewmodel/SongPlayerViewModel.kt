@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nasserkhosravi.hawasilmusicplayer.R
+import com.nasserkhosravi.hawasilmusicplayer.data.FavoriteManager
 import com.nasserkhosravi.hawasilmusicplayer.data.QueueBrain
 import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
@@ -22,12 +23,14 @@ class SongPlayerViewModel : ViewModel() {
     private val songPassed = MutableLiveData<Long>()
     private val repeat = MutableLiveData<Boolean>()
     private val shuffle = MutableLiveData<Boolean>()
+    private var favorite = MutableLiveData<Boolean>()
     private var progressObserver: Disposable? = null
 
     init {
         val data = QueueBrain.data
         repeat.value = data.isEnableRepeat
         shuffle.value = data.isShuffle
+        favorite.value = FavoriteManager.isFavorite(data.selected!!.id)
     }
 
     val getRepeat: LiveData<Boolean>
@@ -38,6 +41,9 @@ class SongPlayerViewModel : ViewModel() {
 
     val getSongPassed: LiveData<Long>
         get() = songPassed
+
+    val getFavorite: LiveData<Boolean>
+        get() = favorite
 
     fun getNewSongEvent(): PublishSubject<SongModel> {
         return SongEventPublisher.newSongPlay
@@ -87,6 +93,18 @@ class SongPlayerViewModel : ViewModel() {
             }
         } else {
             getDefaultArt(context)
+        }
+    }
+
+    fun toggleFavorite() {
+        if (favorite.value!!) {
+            if (FavoriteManager.remove(QueueBrain.data.selected!!.id)) {
+                favorite.value = false
+            }
+        } else {
+            if (FavoriteManager.add(QueueBrain.data.selected!!.id)) {
+                favorite.value = true
+            }
         }
     }
 

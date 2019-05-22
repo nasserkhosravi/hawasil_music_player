@@ -5,8 +5,8 @@ import android.provider.MediaStore
 import com.nasserkhosravi.hawasilmusicplayer.data.model.FlatFolderModel
 
 object FolderCache {
-    val flats = ArrayList<FlatFolderModel>()
-
+    var flatFolders = ArrayList<FlatFolderModel>()
+        private set
     private var foldersPath = HashSet<String>()
     var isCached = false
 
@@ -32,15 +32,15 @@ object FolderCache {
             val new = FlatFolderModel(folderName, detectedPath)
             new.songs = ArrayList()
             new.songs!!.add(id)
-            flats.add(new)
+            flatFolders.add(new)
         } else {
-            flats[flats.size - 1].songs!!.add(id)
+            flatFolders[flatFolders.size - 1].songs!!.add(id)
         }
     }
 
     fun clear() {
         foldersPath.clear()
-        flats.clear()
+        flatFolders.clear()
         isCached = false
     }
 }

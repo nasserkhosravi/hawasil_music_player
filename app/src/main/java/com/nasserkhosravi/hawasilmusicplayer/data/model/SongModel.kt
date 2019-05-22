@@ -30,7 +30,8 @@ data class SongModel(
 
     var status = PAUSE
     var songPassed = 0L
-    var isFavorite = false
+    //    an example of uri is:
+//    content://media/external/audio/albumart/2
     var artUri: Uri? = null
 
     constructor(parcel: Parcel) : this(
@@ -42,7 +43,6 @@ data class SongModel(
         parcel.readLong()
     ) {
         songPassed = parcel.readLong()
-        isFavorite = parcel.readByte() != 0.toByte()
         artUri = parcel.readParcelable(Uri::class.java.classLoader)
     }
 
@@ -82,7 +82,6 @@ data class SongModel(
         parcel.writeLong(id)
         parcel.writeLong(songPassed)
         parcel.writeLong(duration)
-        parcel.writeByte(if (isFavorite) 1 else 0)
         parcel.writeParcelable(artUri, flags)
     }
 
@@ -120,7 +119,6 @@ class SongModelAdapter : JsonDeserializer<SongModel>, JsonSerializer<SongModel> 
         json.addProperty("album", src.album)
         json.addProperty("duration", src.duration)
         json.addProperty("songPassed", src.songPassed)
-        json.addProperty("isFavorite", src.isFavorite)
         json.addProperty("isPlaying", src.isPlaying())
         json.addProperty("artUri", src.artUri?.toString())
         return json
@@ -131,8 +129,8 @@ class SongModelAdapter : JsonDeserializer<SongModel>, JsonSerializer<SongModel> 
         val id = json.get("id").asLong
         val path = json.get("path").asString
         val title = json.get("title").asString
-        val album = json.get("artist").asString
-        val artist = json.get("album").asString
+        val album = json.get("album").asString
+        val artist = json.get("artist").asString
         val duration = json.get("duration").asLong
         val songPassed = json.get("songPassed").asLong
         val isPlaying = json.get("isPlaying").asBoolean
