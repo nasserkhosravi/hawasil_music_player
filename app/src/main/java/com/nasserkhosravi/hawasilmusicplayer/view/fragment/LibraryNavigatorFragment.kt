@@ -15,11 +15,19 @@ class LibraryNavigatorFragment : BaseComponentFragment(), View.OnClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         menuFragment = LibraryMenuFragment.newInstance()
-        childFragmentManager.beginTransaction().add(R.id.flLibrary, menuFragment!!).commit()
+        menuFragment!!.viewClickListener = this
+        childFragmentManager.beginTransaction().replace(R.id.flLibrary, menuFragment!!).commit()
     }
 
     private fun replace(fragment: Fragment) {
-        childFragmentManager.beginTransaction().replace(R.id.flLibrary, fragment).addToBackStack("child").commit()
+        childFragmentManager.beginTransaction().replace(R.id.flLibrary, fragment)
+            .setPrimaryNavigationFragment(fragment)
+            .addToBackStack("menu navigator").commit()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        menuFragment!!.viewClickListener = null
     }
 
     override fun onClick(v: View) {

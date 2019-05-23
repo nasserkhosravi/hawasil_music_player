@@ -7,25 +7,15 @@ import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.setOnClickListeners
 import kotlinx.android.synthetic.main.fragment_library_menu.*
 
-class LibraryMenuFragment : BaseComponentFragment(), View.OnClickListener {
+class LibraryMenuFragment : BaseComponentFragment() {
     override val layoutRes: Int
         get() = R.layout.fragment_library_menu
 
+    var viewClickListener: View.OnClickListener? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setOnClickListeners(this, tvAlbums, tvArtists, tvSongs, tvPlayLists)
+        setOnClickListeners(viewClickListener, tvAlbums, tvArtists, tvSongs, tvPlayLists)
     }
-
-    override fun onClick(v: View) {
-//        todo: code smell -> [parentFragment]
-        (parentFragment as LibraryNavigatorFragment).onClick(v)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        setOnClickListeners(null, tvAlbums, tvArtists, tvSongs, tvPlayLists)
-    }
-
 
     companion object {
         fun newInstance(): LibraryMenuFragment {

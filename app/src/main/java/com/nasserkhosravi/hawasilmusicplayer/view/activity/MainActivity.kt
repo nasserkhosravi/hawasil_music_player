@@ -58,8 +58,9 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
         searchFragment = SearchFragment.newInstance()
 
         supportFragmentManager.beginTransaction()
-            .replace(R.id.flMiniPlayer, miniPlayerFragment!!, MiniPlayerFragment.tag())
+            .setPrimaryNavigationFragment(libraryFragment!!)
             .replace(R.id.flBody, libraryFragment!!)
+            .replace(R.id.flMiniPlayer, miniPlayerFragment!!, MiniPlayerFragment.tag())
             .replace(R.id.flNavigation, navigationFragment)
             .commit()
         flMiniPlayer.setOnClickListener(this)
@@ -83,7 +84,7 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
         navigationFragment?.listener = null
     }
 
-    override fun onNavigationChanged(view: View, p1: Int) {
+    override fun onNavigationChanged(view: View, position: Int) {
         when (view.id) {
             R.id.itemLibrary -> {
                 replaceFragment(R.id.flBody, libraryFragment!!)
