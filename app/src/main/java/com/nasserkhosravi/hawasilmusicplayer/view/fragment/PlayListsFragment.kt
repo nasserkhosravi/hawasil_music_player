@@ -8,11 +8,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
+import com.nasserkhosravi.hawasilmusicplayer.app.setOnClickListeners
+import com.nasserkhosravi.hawasilmusicplayer.data.model.PlayListModel
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.PlayListAdapter
+import com.nasserkhosravi.hawasilmusicplayer.view.dialog.CreatingPlaylistDialog
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.PlayListsViewModel
 import kotlinx.android.synthetic.main.fragment_playlist.*
-import kotlinx.android.synthetic.main.inc_toolbar.*
-
 
 class PlayListsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickListener {
     override val layoutRes: Int
@@ -20,6 +21,7 @@ class PlayListsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClic
 
     private val adapter = PlayListAdapter()
     private lateinit var viewModel: PlayListsViewModel
+    private var creatingDialog: CreatingPlaylistDialog? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -29,25 +31,60 @@ class PlayListsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClic
             rvPlayLists.adapter = adapter
         })
         adapter.itemClickListener = this
-
         rvPlayLists.layoutManager = LinearLayoutManager(context)
 
         tvTitle.text = getString(R.string.PlayLists)
         imgBack.setOnClickListener {
             fragmentManager!!.popBackStack()
         }
+        imgCreatePlaylist.setOnClickListener {
+            if (!isShowingDialog()) {
+                showCreatingPlaylistDialog()
+            }
+        }
+    }
+
+    private fun isShowingDialog() = creatingDialog != null && creatingDialog!!.dialog.isShowing && !creatingDialog!!.isRemoving
+
+    private fun showCreatingPlaylistDialog() {
+        if (creatingDialog == null) {
+            creatingDialog = CreatingPlaylistDialog.newInstance()
+            creatingDialog!!.onClickListener = View.OnClickListener {
+                when (it!!.id) {
+                    R.id.btnConfirm -> {
+                        val playlistName = creatingDialog!!.getEditText()!!.text.toString()
+                        if (playlistName.isNotEmpty() && playlistName.isNotBlank()) {
+                            val playlistId = viewModel.createPlaylist(playlistName)
+                            creatingDialog!!.dismiss()
+                            if (playlistId > -1) {
+
+                                val newPlaylist = PlayListModel(playlistId, playlistName, ArrayList())
+                                viewModel.getPlayLists.value!!.add(newPlaylist)
+                                adapter.notifyItemInserted(viewModel.getPlayLists.value!!.lastIndex)
+                            }
+                        }
+                    }
+                    R.id.btnCancel -> {
+                        creatingDialog!!.dismiss()
+                    }
+                }
+            }
+        }
+        creatingDialog!!.showNow(childFragmentManager, CreatingPlaylistDialog.tag())
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         adapter.itemClickListener = null
-        imgBack.setOnClickListener(null)
+        creatingDialog?.dismiss()
+        setOnClickListeners(null, imgBack, imgCreatePlaylist)
     }
 
     override fun onRecycleItemClick(view: View, position: Int) {
         val model = adapter.items!![position]
         flQueue.visibility = View.VISIBLE
-        childFragmentManager.beginTransaction().replace(R.id.flQueue, QueueFragment.newInstance(model))
+        childFragmentManager.beginTransaction()
+            .replace(R.id.flQueue, QueueFragment.newInstance(model))
             .addToBackStack("queue")
             .commit()
     }

@@ -105,7 +105,7 @@ object MediaProvider {
         }
     }
 
-    fun getPlayLists(): List<PlayListModel> {
+    fun getPlayLists(): ArrayList<PlayListModel> {
         val result = ArrayList<PlayListModel>()
         val playlistUri = Playlists.EXTERNAL_CONTENT_URI
         val columns = arrayOf(

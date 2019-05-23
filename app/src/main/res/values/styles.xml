@@ -93,7 +93,7 @@
         <item name="android:layout_height">30dp</item>
     </style>
 
-    <style name="imgSetting">
+    <style name="imgToolBar">
         <item name="android:layout_width">@dimen/toolbar_icon_size</item>
         <item name="android:layout_height">@dimen/toolbar_icon_size</item>
         <item name="android:layout_margin">10dp</item>

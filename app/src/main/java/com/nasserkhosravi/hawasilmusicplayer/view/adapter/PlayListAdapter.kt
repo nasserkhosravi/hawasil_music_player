@@ -26,9 +26,13 @@ class PlayListAdapter : BaseComponentAdapter<PlayListModel>() {
         vh.tvCount.text = String.format(getStringRes(R.string.TEMPLATE_song_count), model.members.size)
         val artWorks = model.get4Artworks()
         vh.imgArt.visibility = View.VISIBLE
-        vh.imgArt.setImageURI(artWorks[0].second)
+        if (artWorks.isNotEmpty()) {
+            vh.imgArt.setImageURI(artWorks[0].second)
+        } else {
+            //use default
+            vh.imgArt.setImageResource(R.drawable.art_default)
+        }
     }
-
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvTitle: TextView = view.findViewById(R.id.tvTitle)

@@ -18,4 +18,8 @@
     <string name="Folder">Folder</string>
     <string name="Search">Search</string>
     <string name="Hawasil">Hawasil</string>
+    <string name="Creating_Playlist">Creating Playlist</string>
+    <string name="Name">Name</string>
+    <string name="Cancel">Cancel</string>
+    <string name="Confirm">Confirm</string>
 </resources>

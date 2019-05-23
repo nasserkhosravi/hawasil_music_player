@@ -120,7 +120,7 @@ class SongPlayerViewModel : ViewModel() {
 
     private fun getDefaultArt(context: Context): Bitmap {
         if (defaultArt == null) {
-            defaultArt = BitmapFactory.decodeResource(context.resources, R.drawable.art_balabar)
+            defaultArt = BitmapFactory.decodeResource(context.resources, R.drawable.art_default)
         }
         return defaultArt!!
     }

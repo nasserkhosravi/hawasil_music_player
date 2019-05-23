@@ -7,7 +7,7 @@
 
     <ImageView
         android:id="@+id/imgSetting"
-        style="@style/imgSetting"
+        style="@style/imgToolBar"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:src="@drawable/ic_settings_black_24dp"

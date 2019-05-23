@@ -16,7 +16,7 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_margin="10dp"
-            android:src="@drawable/art_balabar"
+            android:src="@drawable/art_default"
             />
 
         <TextView
