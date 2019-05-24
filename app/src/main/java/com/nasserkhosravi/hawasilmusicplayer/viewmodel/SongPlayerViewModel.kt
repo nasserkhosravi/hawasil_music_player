@@ -59,7 +59,7 @@ class SongPlayerViewModel : ViewModel() {
     }
 
     fun reversePlay() {
-        QueueBrain.reversePlay()
+        QueueBrain.togglePlay()
     }
 
     fun playPrevious() {

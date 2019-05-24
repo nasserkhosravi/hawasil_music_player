@@ -16,6 +16,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
     private var mediaPlayer: MediaPlayer? = null
     var audioPath: String? = null
     var progressPublisher = SuspendableObservable(10, TimeUnit.MILLISECONDS)
+    private lateinit var audioNoisyReceiver: AudioNoisyReceiver
 
     override fun onCreate() {
         super.onCreate()
@@ -23,6 +24,9 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
         progressPublisher.observable =
             progressPublisher.observable.observeOn(AndroidSchedulers.mainThread()).map { computePassedDuration() }
         initMediaPlayer()
+
+        audioNoisyReceiver = AudioNoisyReceiver()
+        registerReceiver(audioNoisyReceiver, AudioNoisyReceiver.createIntentFilter())
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
@@ -101,8 +105,10 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
         mediaPlayer?.release()
     }
 
+
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(audioNoisyReceiver)
         isActive = false
     }
 

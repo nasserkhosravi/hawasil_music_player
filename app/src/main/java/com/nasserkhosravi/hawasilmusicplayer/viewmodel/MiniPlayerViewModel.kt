@@ -40,7 +40,7 @@ class MiniPlayerViewModel(app: Application) : AndroidViewModel(app) {
         get() = progress
 
     fun reversePlay() {
-        QueueBrain.reversePlay()
+        QueueBrain.togglePlay()
     }
 
     fun hasQueue(): Boolean {

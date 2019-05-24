@@ -94,7 +94,7 @@ object QueueBrain {
         }
     }
 
-    private fun resume() {
+    fun resume() {
         registerFinishListener()
         data.selected!!.status = SongStatus.PLAYING
         if (data.isSongRestored) {
@@ -107,10 +107,10 @@ object QueueBrain {
         SongEventPublisher.songStatusChange.onNext(SongStatus.PLAYING)
     }
 
-    private fun pause() {
+    fun pause() {
         finishObserver?.dispose()
-        playerService!!.pause()
-        data.selected!!.status = SongStatus.PAUSE
+        playerService?.pause()
+        data.selected?.status = SongStatus.PAUSE
         SongEventPublisher.songStatusChange.onNext(SongStatus.PAUSE)
     }
 
@@ -118,7 +118,7 @@ object QueueBrain {
         data.isEnableRepeat = !data.isEnableRepeat
     }
 
-    fun reversePlay() {
+    fun togglePlay() {
         if (data.selected!!.isPlaying()) {
             pause()
         } else {
