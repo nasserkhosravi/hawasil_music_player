@@ -5,12 +5,15 @@ import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.nasserkhosravi.appcomponent.AppContext
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
+import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
 import com.nasserkhosravi.hawasilmusicplayer.data.model.*
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.SongAdapter
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.QueueViewModel
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_queue.*
 import kotlinx.android.synthetic.main.inc_toolbar.*
 
@@ -20,6 +23,7 @@ class QueueFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLis
 
     private val adapter = SongAdapter()
     private lateinit var viewModel: QueueViewModel
+    private var shuffleModeDisposable: Disposable? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -37,15 +41,20 @@ class QueueFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLis
             adapter.items = it
             rvQueue.adapter = adapter
         })
-
+        //todo: code smell imgBack
         imgBack.setOnClickListener {
             fragmentManager!!.popBackStack()
-            parentFragment!!.view!!.findViewById<View>(R.id.flQueue).visibility = View.GONE
+            parentFragment?.view?.findViewById<View>(R.id.flQueue)?.visibility = View.GONE
+        }
+        shuffleModeDisposable = SongEventPublisher.shuffleModeChange.subscribe {
+            //            adapter.items = QueueBrain.data.queue
+//            adapter.notifyDataSetChanged()
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        shuffleModeDisposable?.dispose()
         adapter.itemClickListener = null
         imgBack.setOnClickListener(null)
     }
@@ -59,6 +68,7 @@ class QueueFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLis
         fun tag(): String {
             return QueueFragment::class.java.simpleName
         }
+
         fun newInstance(model: ArtistModel): QueueFragment {
             val fragment = QueueFragment()
             val bundle = Bundle()
@@ -95,6 +105,16 @@ class QueueFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLis
             bundle.putInt("type", QueueType.PLAYLIST.toInt())
             bundle.putString("id", model.id.toString())
             bundle.putString("title", model.title)
+            fragment.arguments = bundle
+            return fragment
+        }
+
+        fun newInstance(): QueueFragment {
+            val fragment = QueueFragment()
+            val bundle = Bundle()
+            bundle.putInt("type", QueueType.SONGS.toInt())
+            bundle.putString("id", "${AppContext.get().packageName}.songList")
+            bundle.putString("title", "Songs")
             fragment.arguments = bundle
             return fragment
         }

@@ -9,8 +9,19 @@ import com.nasserkhosravi.hawasilmusicplayer.R
 class LibraryNavigatorFragment : BaseComponentFragment(), View.OnClickListener {
     override val layoutRes: Int
         get() = R.layout.fragment_library
-
     private var menuFragment: LibraryMenuFragment? = null
+    private val albumsFragment: AlbumsFragment by lazy {
+        AlbumsFragment.newInstance()
+    }
+    private val artistsFragment: ArtistsFragment by lazy {
+        ArtistsFragment.newInstance()
+    }
+    private val queueFragment: QueueFragment by lazy {
+        QueueFragment.newInstance()
+    }
+    private val playListsFragment: PlayListsFragment by lazy {
+        PlayListsFragment.newInstance()
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -21,7 +32,6 @@ class LibraryNavigatorFragment : BaseComponentFragment(), View.OnClickListener {
 
     private fun replace(fragment: Fragment) {
         childFragmentManager.beginTransaction().replace(R.id.flLibrary, fragment)
-            .setPrimaryNavigationFragment(fragment)
             .addToBackStack("menu navigator").commit()
     }
 
@@ -33,16 +43,16 @@ class LibraryNavigatorFragment : BaseComponentFragment(), View.OnClickListener {
     override fun onClick(v: View) {
         when (v.id) {
             R.id.tvAlbums -> {
-                replace(AlbumsFragment.newInstance())
+                replace(albumsFragment)
             }
             R.id.tvArtists -> {
-                replace(ArtistsFragment.newInstance())
+                replace(artistsFragment)
             }
             R.id.tvSongs -> {
-                replace(SongsFragment.newInstance())
+                replace(queueFragment)
             }
             R.id.tvPlayLists -> {
-                replace(PlayListsFragment.newInstance())
+                replace(playListsFragment)
             }
             else -> {
                 throw IllegalArgumentException()

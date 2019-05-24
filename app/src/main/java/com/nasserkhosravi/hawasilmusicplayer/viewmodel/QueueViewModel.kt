@@ -43,6 +43,9 @@ class QueueViewModel : ViewModel() {
             QueueType.PLAYLIST -> {
                 MediaProvider.getPlaylistTracks(queueId.toLong())
             }
+            QueueType.SONGS -> {
+                MediaProvider.getSongs()
+            }
             else -> throw IllegalArgumentException()
         }
     }
@@ -53,12 +56,14 @@ class QueueViewModel : ViewModel() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                result.value = fetchSongsFromDB()
+                val songs = fetchSongsFromDB()
+                songs.sortBy { it.title }
+                result.value = songs
             }
     }
 
     fun onSongClick(position: Int) {
-        QueueBrain.checkNewQueueRequest(songs.value!!, position, queueId)
+        QueueBrain.processRequest(songs.value!!, position, queueId)
     }
 
     fun tag(): String {

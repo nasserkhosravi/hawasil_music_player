@@ -36,7 +36,7 @@ class SongAdapter : BaseComponentAdapter<SongModel>() {
         }
 
         val shadowLayout = vh.itemView as ShadowLayout
-        val selectedSong = QueueBrain.getSelected()
+        val selectedSong = QueueBrain.data.selected
         if (selectedSong != null && model.id == selectedSong.id) {
             selectedPosition = position
             shadowLayout.shadowColor = getColorRes(R.color.enabled_item)

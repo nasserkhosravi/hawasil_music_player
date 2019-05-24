@@ -35,6 +35,6 @@ class SongsViewModel : ViewModel() {
 
 
     fun onSongClick(position: Int) {
-        QueueBrain.checkNewQueueRequest(songs.value!!, position, "${AppContext.get().packageName}.songList")
+        QueueBrain.processRequest(songs.value!!, position, "${AppContext.get().packageName}.songList")
     }
 }

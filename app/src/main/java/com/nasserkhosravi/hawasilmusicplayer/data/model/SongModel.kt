@@ -89,6 +89,11 @@ data class SongModel(
         return 0
     }
 
+    fun reset() {
+        songPassed = 0
+        status = SongStatus.PAUSE
+    }
+
     companion object CREATOR : Parcelable.Creator<SongModel> {
         override fun createFromParcel(parcel: Parcel): SongModel {
             return SongModel(parcel)

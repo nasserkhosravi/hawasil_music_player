@@ -43,7 +43,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
     fun playFromLastPosition() {
         if (!mediaPlayer!!.isPlaying) {
             //todo:song passed dependency, remove it
-            mediaPlayer?.seekTo(QueueBrain.getSelected()!!.songPassed.toInt())
+            mediaPlayer?.seekTo(QueueBrain.data.selected!!.songPassed.toInt())
             mediaPlayer!!.start()
             progressPublisher.resume()
         }
@@ -81,7 +81,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         //if user or system want kill app then force pause song
-        QueueBrain.getSelected()!!.status = SongStatus.PAUSE
+        QueueBrain.data.selected!!.status = SongStatus.PAUSE
         UserPref.saveQueueData(QueueBrain.data)
         release()
         super.onTaskRemoved(rootIntent)

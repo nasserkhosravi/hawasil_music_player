@@ -21,11 +21,12 @@ import com.nasserkhosravi.appcomponent.utils.UIUtils
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.FormatUtils
 import com.nasserkhosravi.hawasilmusicplayer.R
-import com.nasserkhosravi.hawasilmusicplayer.app.safeDispose
 import com.nasserkhosravi.hawasilmusicplayer.app.setOnClickListeners
+import com.nasserkhosravi.hawasilmusicplayer.data.QueueBrain
+import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.SongPlayerViewModel
-import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_player.*
 
 class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
@@ -33,10 +34,8 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
         get() = R.layout.fragment_player
 
     private var seekBarChangeListener: SeekBar.OnSeekBarChangeListener? = null
-    private var seekBarObserver: Disposable? = null
-    private var newSongPlayObserver: Disposable? = null
-    private var songCompletedObserver: Disposable? = null
-    private var songStatusObserver: Disposable? = null
+    private val compositeDisposable = CompositeDisposable()
+
     private lateinit var viewModel: SongPlayerViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -48,9 +47,10 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
         viewModel.getRepeat.observe(this, Observer {
             refreshImgRepeat(it)
         })
-        viewModel.getShuffle.observe(this, Observer {
+        val shuffleModeDisposable = SongEventPublisher.shuffleModeChange.subscribe {
             refreshImgShuffle(it)
-        })
+        }
+
         viewModel.getSongPassed.observe(this, Observer {
             refreshTimeInfo(it)
         })
@@ -58,19 +58,23 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
             refreshImgFavorite(it)
         })
 
-        newSongPlayObserver = viewModel.getNewSongEvent().subscribe {
+        val newSongPlayObserver = viewModel.getNewSongEvent().subscribe {
             setSongInfoInView(it!!)
         }
-        songStatusObserver = viewModel.getSongStatusEvent().subscribe {
+        val songStatusObserver = viewModel.getSongStatusEvent().subscribe {
             viewModel.registerTimeReporting()
             refreshStatusView(it.isPlay())
         }
-        songCompletedObserver = viewModel.getSongCompleteEvent().subscribe {
+        val songCompletedObserver = viewModel.getSongCompleteEvent().subscribe {
             refreshStatusView(false)
-            //code smell
+            //todo: code smell
             refreshTimeInfo(0)
             viewModel.unRegisterTimeReporting()
         }
+        compositeDisposable.add(shuffleModeDisposable)
+        compositeDisposable.add(newSongPlayObserver)
+        compositeDisposable.add(songStatusObserver)
+        compositeDisposable.add(songCompletedObserver)
 
         val model = viewModel.getCurrentSong()
         setSongInfoInView(model)
@@ -88,6 +92,7 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         }
         skbTimeline.setOnSeekBarChangeListener(seekBarChangeListener)
+        refreshImgShuffle(QueueBrain.data.isShuffle)
     }
 
     override fun onStart() {
@@ -185,7 +190,7 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
         super.onDestroyView()
         skbTimeline.setOnSeekBarChangeListener(null)
         viewModel.unRegisterTimeReporting()
-        safeDispose(seekBarObserver, newSongPlayObserver, songCompletedObserver, songStatusObserver)
+        compositeDisposable.clear()
         setOnClickListeners(null, imgPlayStatus, imgFavorite, imgUp, imgPrevious, imgNext, imgShuffle, imgRepeat, imgPlayStatus)
     }
 

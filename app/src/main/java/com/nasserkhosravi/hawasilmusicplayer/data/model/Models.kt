@@ -45,7 +45,7 @@ data class PlayListModel(val id: Long, val title: String, val members: ArrayList
 }
 
 enum class QueueType(val id: Int) {
-    UN_KNOWN(0), SONG(1), ALBUM(2), PLAYLIST(3), FOLDER(4), ARTIST(5);
+    UN_KNOWN(0), SONGS(1), ALBUM(2), PLAYLIST(3), FOLDER(4), ARTIST(5);
 
     fun toInt() = id
 

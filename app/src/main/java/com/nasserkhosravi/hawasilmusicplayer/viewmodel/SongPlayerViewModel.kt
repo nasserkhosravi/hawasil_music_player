@@ -36,9 +36,6 @@ class SongPlayerViewModel : ViewModel() {
     val getRepeat: LiveData<Boolean>
         get() = repeat
 
-    val getShuffle: LiveData<Boolean>
-        get() = shuffle
-
     val getSongPassed: LiveData<Long>
         get() = songPassed
 
@@ -84,7 +81,7 @@ class SongPlayerViewModel : ViewModel() {
     }
 
     fun getArt(context: Context): Bitmap {
-        val model = QueueBrain.getSelected()!!
+        val model = QueueBrain.data.selected!!
         return if (model.artUri != null) {
             try {
                 MediaStore.Images.Media.getBitmap(context.contentResolver, model.artUri!!)
@@ -131,7 +128,7 @@ class SongPlayerViewModel : ViewModel() {
     }
 
     fun getCurrentSong(): SongModel {
-        return QueueBrain.getSelected()!!
+        return QueueBrain.data.selected!!
     }
 
 }

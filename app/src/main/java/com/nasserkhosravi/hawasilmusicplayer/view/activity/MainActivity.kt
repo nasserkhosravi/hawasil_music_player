@@ -58,7 +58,6 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
         searchFragment = SearchFragment.newInstance()
 
         supportFragmentManager.beginTransaction()
-            .setPrimaryNavigationFragment(libraryFragment!!)
             .replace(R.id.flBody, libraryFragment!!)
             .replace(R.id.flMiniPlayer, miniPlayerFragment!!, MiniPlayerFragment.tag())
             .replace(R.id.flNavigation, navigationFragment)

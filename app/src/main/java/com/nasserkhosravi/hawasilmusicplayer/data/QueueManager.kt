@@ -33,15 +33,11 @@ object QueueBrain {
         }
     }
 
-    fun getSelected(): SongModel? {
-        return data.selected
-    }
-
-    fun checkNewQueueRequest(items: List<SongModel>, position: Int, queueId: String) {
+    fun processRequest(items: List<SongModel>, position: Int, queueId: String) {
         if (isNewQueue(queueId)) {
-            data.queueId = queueId
-            data.queue.clear()
+            data.reset()
             data.queue.addAll(items)
+            data.queueId = queueId
             replaceAndPlay(position)
         } else {
             //old queue, just check new song
@@ -55,7 +51,11 @@ object QueueBrain {
     }
 
     private fun replaceAndPlay(position: Int) {
-        safeResetToDefault()
+        if (data.selected != null) {
+            if (data.selectedIndex > -1) {
+                data.queue[data.selectedIndex].reset()
+            }
+        }
         //replace
         data.selected = data.queue[position]
         data.selected!!.status = SongStatus.PLAYING
@@ -75,13 +75,6 @@ object QueueBrain {
                 onSongCompletedEvent()
                 finishObserver?.dispose()
             }
-        }
-    }
-
-    private fun safeResetToDefault() {
-        if (data.selected != null) {
-            data.selected!!.songPassed = 0
-            data.selected!!.status = SongStatus.PAUSE
         }
     }
 
@@ -135,6 +128,20 @@ object QueueBrain {
 
     fun toggleShuffle() {
         data.isShuffle = !data.isShuffle
+        if (data.isShuffle) {
+            makeShuffle()
+        } else {
+            makeUnShuffle()
+        }
+        SongEventPublisher.shuffleModeChange.onNext(data.isShuffle)
+    }
+
+    private fun makeShuffle() {
+        data.queue.shuffle()
+    }
+
+    private fun makeUnShuffle() {
+        data.queue.sortBy { it.title }
     }
 
     fun seekTo(progress: Int) {
@@ -167,7 +174,7 @@ object QueueBrain {
     }
 
     private fun isCompletedCurrent(): Boolean {
-        return toSecond(playerService!!.getCurrentPosition().toLong()) == toSecond(getSelected()!!.duration)
+        return toSecond(playerService!!.getCurrentPosition().toLong()) == toSecond(data.selected!!.duration)
     }
 
     private fun isNewQueue(queueId: String): Boolean {
@@ -235,6 +242,16 @@ class QueueData {
             return model
         }
     }
+
+    fun reset() {
+        isSongRestored = false
+        queue.clear()
+        selectedIndex = -1
+        queueId = ""
+        isShuffle = false
+        isEnableRepeat = false
+        selected = null
+    }
 }
 
 object SongEventPublisher {
@@ -242,6 +259,7 @@ object SongEventPublisher {
     val newSongPlay = PublishSubject.create<SongModel>()
     val songComplete = PublishSubject.create<Any>()
     val songStatusChange = PublishSubject.create<SongStatus>()
+    val shuffleModeChange = PublishSubject.create<Boolean>()
 
     init {
         newSongPlay.publish().autoConnect()

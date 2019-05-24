@@ -18,8 +18,8 @@ class AlbumsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLi
         get() = R.layout.fragment_albums
 
     private val adapter = AlbumAdapter()
-    private lateinit var viewModel: AlbumsViewModel
 
+    private lateinit var viewModel: AlbumsViewModel
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(AlbumsViewModel::class.java)
@@ -61,6 +61,10 @@ class AlbumsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLi
     companion object {
         fun newInstance(): AlbumsFragment {
             return AlbumsFragment()
+        }
+
+        fun tag(): String {
+            return AlbumsFragment::class.java.simpleName
         }
     }
 }

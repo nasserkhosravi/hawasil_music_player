@@ -48,7 +48,7 @@ class MiniPlayerViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun getLastSong(): SongModel? {
-        return QueueBrain.getSelected()
+        return QueueBrain.data.selected
     }
 
     fun onStop() {
