@@ -4,17 +4,21 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.media.AudioManager
 import android.os.IBinder
+import androidx.media.AudioAttributesCompat
 import com.google.gson.annotations.Expose
 import com.nasserkhosravi.appcomponent.AppContext
 import com.nasserkhosravi.hawasilmusicplayer.FormatUtils.toSecond
 import com.nasserkhosravi.hawasilmusicplayer.app.App
+import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusHelper
+import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusRequestCompat
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
 
-object QueueBrain {
+object QueueBrain : AudioManager.OnAudioFocusChangeListener {
     var data = QueueData()
         private set
 
@@ -22,14 +26,44 @@ object QueueBrain {
     private var finishObserver: Disposable? = null
     var playerService: MediaPlayerService? = null
 
+    private lateinit var audioFocusRequest: AudioFocusRequestCompat
+    private lateinit var audioFocusHelper: AudioFocusHelper
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             playerService = (service as MediaPlayerService.LocalBinder).service
             isServiceBound = true
+            audioFocusHelper = AudioFocusHelper(AppContext.get())
+            initAudioFocus()
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
+            audioFocusHelper.abandonAudioFocus(audioFocusRequest)
             isServiceBound = false
+        }
+    }
+
+    private fun initAudioFocus() {
+        val audioAttributes = AudioAttributesCompat.Builder()
+            .setUsage(AudioAttributesCompat.USAGE_MEDIA)
+            .setContentType(AudioAttributesCompat.CONTENT_TYPE_MUSIC)
+            .build()
+
+        audioFocusRequest = AudioFocusRequestCompat.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setOnAudioFocusChangeListener(this)
+            .setAudioAttributes(audioAttributes)
+            .build()
+        audioFocusHelper.requestAudioFocus(audioFocusRequest)
+    }
+
+    override fun onAudioFocusChange(focusChange: Int) {
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                resume()
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS -> {
+                pause()
+            }
         }
     }
 
@@ -95,16 +129,18 @@ object QueueBrain {
     }
 
     fun resume() {
-        registerFinishListener()
-        data.selected!!.status = SongStatus.PLAYING
-        if (data.isSongRestored) {
-            playerService!!.resetMediaPlayer()
-            playerService!!.prepareSongAndPlay(data.selected!!.path)
-            data.isSongRestored = false
-        } else {
-            playerService!!.playFromLastPosition()
+        if (audioFocusHelper.requestAudioFocus(audioFocusRequest)) {
+            registerFinishListener()
+            data.selected!!.status = SongStatus.PLAYING
+            if (data.isSongRestored) {
+                playerService!!.resetMediaPlayer()
+                playerService!!.prepareSongAndPlay(data.selected!!.path)
+                data.isSongRestored = false
+            } else {
+                playerService!!.playFromLastPosition()
+            }
+            SongEventPublisher.songStatusChange.onNext(SongStatus.PLAYING)
         }
-        SongEventPublisher.songStatusChange.onNext(SongStatus.PLAYING)
     }
 
     fun pause() {
