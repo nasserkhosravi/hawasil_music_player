@@ -5,12 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nasserkhosravi.hawasilmusicplayer.data.MediaProvider
-import com.nasserkhosravi.hawasilmusicplayer.data.QueueBrain
+import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.model.QueueType
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
-import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.Callable
 
 class QueueViewModel : ViewModel() {
     private lateinit var queueId: String
@@ -52,18 +53,22 @@ class QueueViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun fetchSongsFromDBAsync(result: MutableLiveData<List<SongModel>>) {
-        Observable.just(queueId)
+        val runnable = Callable<ArrayList<SongModel>> {
+            val songs = fetchSongsFromDB()
+            songs.sortBy { it.title }
+            songs
+        }
+        Single.fromCallable(runnable)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                val songs = fetchSongsFromDB()
-                songs.sortBy { it.title }
-                result.value = songs
-            }
+            .subscribe({
+                result.value = it
+            }, {}
+            )
     }
 
     fun onSongClick(position: Int) {
-        QueueBrain.processRequest(songs.value!!, position, queueId)
+        MediaTerminal.processRequest(songs.value!!, position, queueId)
     }
 
     fun tag(): String {

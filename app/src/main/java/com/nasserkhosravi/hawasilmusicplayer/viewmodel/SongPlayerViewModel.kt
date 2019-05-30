@@ -9,25 +9,20 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.data.FavoriteManager
-import com.nasserkhosravi.hawasilmusicplayer.data.QueueBrain
+import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
-import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
-import io.reactivex.disposables.Disposable
-import io.reactivex.subjects.PublishSubject
 import java.io.FileNotFoundException
 
 class SongPlayerViewModel : ViewModel() {
     private var defaultArt: Bitmap? = null
 
-    private val songPassed = MutableLiveData<Long>()
     private val repeat = MutableLiveData<Boolean>()
     private val shuffle = MutableLiveData<Boolean>()
     private var favorite = MutableLiveData<Boolean>()
-    private var progressObserver: Disposable? = null
 
     init {
-        val data = QueueBrain.data
+        val data = MediaTerminal.queue
         repeat.value = data.isEnableRepeat
         shuffle.value = data.isShuffle
         favorite.value = FavoriteManager.isFavorite(data.selected!!.id)
@@ -36,52 +31,47 @@ class SongPlayerViewModel : ViewModel() {
     val getRepeat: LiveData<Boolean>
         get() = repeat
 
-    val getSongPassed: LiveData<Long>
-        get() = songPassed
-
     val getFavorite: LiveData<Boolean>
         get() = favorite
 
-    fun getNewSongEvent(): PublishSubject<SongModel> {
-        return SongEventPublisher.newSongPlay
-    }
+    fun getShuffleEvent() = SongEventPublisher.shuffleModeChange
 
-    fun getSongStatusEvent(): PublishSubject<SongStatus> {
-        return SongEventPublisher.songStatusChange
-    }
+    fun getNewSongEvent() = SongEventPublisher.newSongPlay
 
-    fun getSongCompleteEvent(): PublishSubject<Any> {
-        return SongEventPublisher.songComplete
-    }
+    fun getSongStatusEvent() = SongEventPublisher.songStatusChange
+
+    fun getSongCompleteEvent() = SongEventPublisher.songComplete
+
+    fun getSongChangeEvent() = SongEventPublisher.songPassedChange
 
     fun seekTo(progress: Int) {
-        QueueBrain.seekTo(progress)
+        MediaTerminal.seekTo(progress)
     }
 
     fun reversePlay() {
-        QueueBrain.togglePlay()
+        MediaTerminal.togglePlay()
     }
 
     fun playPrevious() {
-        QueueBrain.playPrevious()
+        MediaTerminal.playPrevious()
     }
 
     fun playNext() {
-        QueueBrain.playNext()
+        MediaTerminal.playNext()
     }
 
     fun toggleRepeat() {
-        QueueBrain.toggleRepeat()
+        MediaTerminal.toggleRepeat()
         repeat.value = !repeat.value!!
     }
 
     fun toggleShuffle() {
-        QueueBrain.toggleShuffle()
+        MediaTerminal.toggleShuffle()
         shuffle.value = !shuffle.value!!
     }
 
     fun getArt(context: Context): Bitmap {
-        val model = QueueBrain.data.selected!!
+        val model = MediaTerminal.queue.selected!!
         return if (model.artUri != null) {
             try {
                 MediaStore.Images.Media.getBitmap(context.contentResolver, model.artUri!!)
@@ -95,23 +85,13 @@ class SongPlayerViewModel : ViewModel() {
 
     fun toggleFavorite() {
         if (favorite.value!!) {
-            if (FavoriteManager.remove(QueueBrain.data.selected!!.id)) {
+            if (FavoriteManager.remove(MediaTerminal.queue.selected!!.id)) {
                 favorite.value = false
             }
         } else {
-            if (FavoriteManager.add(QueueBrain.data.selected!!.id)) {
+            if (FavoriteManager.add(MediaTerminal.queue.selected!!.id)) {
                 favorite.value = true
             }
-        }
-    }
-
-    fun unRegisterTimeReporting() {
-        progressObserver?.dispose()
-    }
-
-    fun registerTimeReporting() {
-        progressObserver = QueueBrain.playerService!!.progressPublisher.observable.subscribe {
-            songPassed.value = getCurrentSong().songPassed
         }
     }
 
@@ -122,13 +102,8 @@ class SongPlayerViewModel : ViewModel() {
         return defaultArt!!
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        unRegisterTimeReporting()
-    }
-
     fun getCurrentSong(): SongModel {
-        return QueueBrain.data.selected!!
+        return MediaTerminal.queue.selected!!
     }
 
 }

@@ -2,34 +2,28 @@ package com.nasserkhosravi.hawasilmusicplayer.view.fragment
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.formatString
-import com.nasserkhosravi.hawasilmusicplayer.app.safeDispose
-import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
+import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.MiniPlayerViewModel
-import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_mini_player.*
 
 class MiniPlayerFragment : BaseComponentFragment() {
     override val layoutRes: Int
         get() = R.layout.fragment_mini_player
 
-    private var newSongPlayObserver: Disposable? = null
-    private var songCompletedObserver: Disposable? = null
-    private var songStatusObserver: Disposable? = null
     private lateinit var viewModel: MiniPlayerViewModel
+    private val compositeDisposable = CompositeDisposable()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MiniPlayerViewModel::class.java)
         val lastSongPlayed = viewModel.getLastSong()
         if (lastSongPlayed != null) {
             setSongInfo(lastSongPlayed)
-            setBackgroundPassed((lastSongPlayed.songPassed.toFloat() / lastSongPlayed.duration.toFloat()))
+            setBackgroundPassed((lastSongPlayed.passedDuration.toFloat() / lastSongPlayed.duration.toFloat()))
             checkButtonStatusView(lastSongPlayed.status.isPlay())
         }
 
@@ -39,26 +33,29 @@ class MiniPlayerFragment : BaseComponentFragment() {
         if (viewModel.hasQueue()) {
             view.visibility = View.VISIBLE
         }
-        newSongPlayObserver = SongEventPublisher.newSongPlay.subscribe {
+        val newSongPlayDisposable = viewModel.getNewSongPlay().subscribe {
             if (view.visibility == View.GONE) {
                 view.visibility = View.VISIBLE
             }
             setSongInfo(it!!)
             imgPlayStatus.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp)
         }
-        songStatusObserver = SongEventPublisher.songStatusChange.subscribe {
-            viewModel.registerProgressReporting()
+        val songStatusDisposable = viewModel.getSongStatus().subscribe {
             checkButtonStatusView(it.isPlay())
         }
-        songCompletedObserver = SongEventPublisher.songComplete.subscribe {
-            viewModel.unRegisterProgressReporting()
+        val songCompletedDisposable = viewModel.getSongComplete().subscribe {
             setBackgroundPassed(0f)
             checkButtonStatusView(false)
         }
-        viewModel.getProgress.observe(this, Observer {
-            setBackgroundPassed(it)
-        })
-
+        val songPassedDisposable = viewModel.getSongPassed().subscribe {
+            if (it > 0) {
+                setBackgroundPassed(MediaTerminal.queue.selected!!.computePassedDuration())
+            }
+        }
+        compositeDisposable.add(newSongPlayDisposable)
+        compositeDisposable.add(songStatusDisposable)
+        compositeDisposable.add(songCompletedDisposable)
+        compositeDisposable.add(songPassedDisposable)
     }
 
     private fun setSongInfo(lastSongPlayed: SongModel) {
@@ -83,23 +80,10 @@ class MiniPlayerFragment : BaseComponentFragment() {
         flFilled.background.level = (p * 10_000).toInt()
     }
 
-    override fun onStart() {
-        super.onStart()
-        viewModel.onStart()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        viewModel.onStop()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.onDestroyView()
-
         imgPlayStatus.setOnClickListener(null)
-        viewModel.unRegisterProgressReporting()
-        safeDispose(newSongPlayObserver, songCompletedObserver, songStatusObserver)
+        compositeDisposable.clear()
     }
 
     companion object {

@@ -20,7 +20,6 @@ class NavigationFragment : BaseComponentFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         bottomNavigation.setNavigationChangeListener(null)
-        listener = null
     }
 
     companion object {

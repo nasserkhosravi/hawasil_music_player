@@ -13,9 +13,11 @@ import java.util.concurrent.TimeUnit
 
 class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
     private val iBinder = LocalBinder()
+    //inject
     private var mediaPlayer: MediaPlayer? = null
-    var audioPath: String? = null
+    //inject
     var progressPublisher = SuspendableObservable(10, TimeUnit.MILLISECONDS)
+    //inject
     private lateinit var audioNoisyReceiver: AudioNoisyReceiver
 
     override fun onCreate() {
@@ -47,7 +49,7 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
     fun playFromLastPosition() {
         if (!mediaPlayer!!.isPlaying) {
             //todo:song passed dependency, remove it
-            mediaPlayer?.seekTo(QueueBrain.data.selected!!.songPassed.toInt())
+            mediaPlayer?.seekTo(MediaTerminal.queue.selected!!.passedDuration.toInt())
             mediaPlayer!!.start()
             progressPublisher.resume()
         }
@@ -64,7 +66,6 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
     }
 
     fun prepareSongAndPlay(path: String) {
-        this.audioPath = path
         mediaPlayer!!.setAudioStreamType(AudioManager.STREAM_MUSIC)
         try {
             mediaPlayer!!.setDataSource(path)
@@ -85,8 +86,8 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         //if user or system want kill app then force pause song
-        QueueBrain.data.selected!!.status = SongStatus.PAUSE
-        UserPref.saveQueueData(QueueBrain.data)
+        MediaTerminal.queue.selected!!.status = SongStatus.PAUSE
+        UserPref.saveQueueData(MediaTerminal.queue)
         release()
         super.onTaskRemoved(rootIntent)
     }

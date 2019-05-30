@@ -18,24 +18,23 @@ import androidx.palette.graphics.Palette
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.nasserkhosravi.appcomponent.utils.UIUtils
-import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.FormatUtils
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.setOnClickListeners
-import com.nasserkhosravi.hawasilmusicplayer.data.QueueBrain
-import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
+import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
+import com.nasserkhosravi.hawasilmusicplayer.view.fragment.component.BaseFragment
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.SongPlayerViewModel
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_player.*
 
-class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
+class SongPlayerFragment : BaseFragment(), View.OnClickListener {
+
     override val layoutRes: Int
         get() = R.layout.fragment_player
 
     private var seekBarChangeListener: SeekBar.OnSeekBarChangeListener? = null
     private val compositeDisposable = CompositeDisposable()
-
     private lateinit var viewModel: SongPlayerViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,13 +46,12 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
         viewModel.getRepeat.observe(this, Observer {
             refreshImgRepeat(it)
         })
-        val shuffleModeDisposable = SongEventPublisher.shuffleModeChange.subscribe {
+        val shuffleModeDisposable = viewModel.getShuffleEvent().subscribe {
             refreshImgShuffle(it)
         }
-
-        viewModel.getSongPassed.observe(this, Observer {
+        val progressObserver = viewModel.getSongChangeEvent().subscribe {
             refreshTimeInfo(it)
-        })
+        }
         viewModel.getFavorite.observe(this, Observer {
             refreshImgFavorite(it)
         })
@@ -62,16 +60,14 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
             setSongInfoInView(it!!)
         }
         val songStatusObserver = viewModel.getSongStatusEvent().subscribe {
-            viewModel.registerTimeReporting()
             refreshStatusView(it.isPlay())
         }
         val songCompletedObserver = viewModel.getSongCompleteEvent().subscribe {
             refreshStatusView(false)
-            //todo: code smell
             refreshTimeInfo(0)
-            viewModel.unRegisterTimeReporting()
         }
         compositeDisposable.add(shuffleModeDisposable)
+        compositeDisposable.add(progressObserver)
         compositeDisposable.add(newSongPlayObserver)
         compositeDisposable.add(songStatusObserver)
         compositeDisposable.add(songCompletedObserver)
@@ -92,21 +88,7 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         }
         skbTimeline.setOnSeekBarChangeListener(seekBarChangeListener)
-        refreshImgShuffle(QueueBrain.data.isShuffle)
-    }
-
-    override fun onStart() {
-        super.onStart()
-//        todo: Code smell
-        activity?.findViewById<View>(R.id.flPlayer)!!.visibility = View.VISIBLE
-        activity?.findViewById<View>(R.id.layoutBody)!!.visibility = View.GONE
-    }
-
-    override fun onStop() {
-        super.onStop()
-//        todo: Code smell
-        activity?.findViewById<View>(R.id.flPlayer)!!.visibility = View.GONE
-        activity?.findViewById<View>(R.id.layoutBody)!!.visibility = View.VISIBLE
+        refreshImgShuffle(MediaTerminal.queue.isShuffle)
     }
 
     private fun setSongInfoInView(model: SongModel) {
@@ -115,12 +97,9 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
         tvDuration.text = model.getFormatDuration()
         skbTimeline.max = model.duration.toInt()
         refreshStatusView(model.status.isPlay())
-//        refreshTimeInfo(model.songPassed)
         val art = viewModel.getArt(context!!)
         generateColorPalletAndSetIt(art)
         Glide.with(this).load(art).apply(RequestOptions.circleCropTransform()).into(imgPlayer)
-        viewModel.unRegisterTimeReporting()
-        viewModel.registerTimeReporting()
     }
 
     private fun refreshTimeInfo(songPassed: Long) {
@@ -189,7 +168,7 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         skbTimeline.setOnSeekBarChangeListener(null)
-        viewModel.unRegisterTimeReporting()
+        seekBarChangeListener = null
         compositeDisposable.clear()
         setOnClickListeners(null, imgPlayStatus, imgFavorite, imgUp, imgPrevious, imgNext, imgShuffle, imgRepeat, imgPlayStatus)
     }
@@ -235,4 +214,6 @@ class SongPlayerFragment : BaseComponentFragment(), View.OnClickListener {
             return SongPlayerFragment::class.java.simpleName
         }
     }
+
+
 }

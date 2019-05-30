@@ -9,14 +9,14 @@ import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.data.MediaProvider
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.AlbumAdapter
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.ArtistAdapter
-import com.nasserkhosravi.hawasilmusicplayer.view.adapter.SongAdapter
+import com.nasserkhosravi.hawasilmusicplayer.view.adapter.QueueAdapter
 import kotlinx.android.synthetic.main.fragment_search.*
 
 class SearchFragment : BaseComponentFragment() {
     override val layoutRes: Int
         get() = R.layout.fragment_search
 
-    private var songAdapter = SongAdapter()
+    private var songAdapter = QueueAdapter()
     private var albumAdapter = AlbumAdapter()
     private var artistAdapter = ArtistAdapter()
 

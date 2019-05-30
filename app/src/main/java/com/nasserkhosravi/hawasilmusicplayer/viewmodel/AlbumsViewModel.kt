@@ -9,6 +9,7 @@ import com.nasserkhosravi.hawasilmusicplayer.data.model.AlbumModel
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.Callable
 
 class AlbumsViewModel : ViewModel() {
 
@@ -23,13 +24,16 @@ class AlbumsViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun fetchAlbumsAsync(result: MutableLiveData<List<AlbumModel>>) {
-        Single.just("").subscribeOn(Schedulers.io())
-            .map {
-                MediaProvider.getAlbums()
-            }
-            .observeOn(AndroidSchedulers.mainThread()).subscribe({
+        val runnable = Callable<List<AlbumModel>> {
+            MediaProvider.getAlbums()
+        }
+        Single.fromCallable(runnable)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
                 result.value = it
-            }, {})
+            }, {}
+            )
     }
 
 }

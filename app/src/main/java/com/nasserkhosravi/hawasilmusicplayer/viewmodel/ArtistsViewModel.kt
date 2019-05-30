@@ -9,6 +9,7 @@ import com.nasserkhosravi.hawasilmusicplayer.data.model.ArtistModel
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.Callable
 
 class ArtistsViewModel : ViewModel() {
 
@@ -23,12 +24,16 @@ class ArtistsViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun fetchArtistAsync(result: MutableLiveData<List<ArtistModel>>) {
-        //todo: it will be good to convert single to completable
-        Single.just("").subscribeOn(Schedulers.io())
-            .map { MediaProvider.getArtists() }
-            .observeOn(AndroidSchedulers.mainThread()).subscribe({
+        val runnable = Callable<List<ArtistModel>> {
+            MediaProvider.getArtists()
+        }
+        Single.fromCallable(runnable)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
                 result.value = it
-            }, {})
+            }, {}
+            )
     }
 
 }

@@ -9,9 +9,9 @@ import com.nasserkhosravi.appcomponent.AppContext
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
-import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
 import com.nasserkhosravi.hawasilmusicplayer.data.model.*
-import com.nasserkhosravi.hawasilmusicplayer.view.adapter.SongAdapter
+import com.nasserkhosravi.hawasilmusicplayer.view.adapter.QueueAdapter
+import com.nasserkhosravi.hawasilmusicplayer.view.adapter.RecycleItemListener
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.QueueViewModel
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_queue.*
@@ -21,9 +21,11 @@ class QueueFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLis
     override val layoutRes: Int
         get() = R.layout.fragment_queue
 
-    private val adapter = SongAdapter()
+    private val adapter = QueueAdapter()
     private lateinit var viewModel: QueueViewModel
+    private lateinit var itemTouchListener: RecycleItemListener
     private var shuffleModeDisposable: Disposable? = null
+    var imgBackClickListener: View.OnClickListener? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -35,27 +37,23 @@ class QueueFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLis
         viewModel.setArgs(queueId, type)
 
         tvTitle.text = title
-        adapter.itemClickListener = this
         rvQueue.layoutManager = LinearLayoutManager(context)
         viewModel.getSongs.observe(this, Observer {
             adapter.items = it
             rvQueue.adapter = adapter
         })
-        //todo: code smell imgBack
         imgBack.setOnClickListener {
             fragmentManager!!.popBackStack()
-            parentFragment?.view?.findViewById<View>(R.id.flQueue)?.visibility = View.GONE
+            imgBackClickListener?.onClick(it)
         }
-        shuffleModeDisposable = SongEventPublisher.shuffleModeChange.subscribe {
-            //            adapter.items = QueueBrain.data.queue
-//            adapter.notifyDataSetChanged()
-        }
+        rvQueue.addOnItemTouchListener(itemTouchListener)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         shuffleModeDisposable?.dispose()
-        adapter.itemClickListener = null
+        imgBackClickListener = null
+        rvQueue.removeOnItemTouchListener(itemTouchListener)
         imgBack.setOnClickListener(null)
     }
 

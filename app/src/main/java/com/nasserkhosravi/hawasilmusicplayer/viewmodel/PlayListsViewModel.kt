@@ -9,6 +9,7 @@ import com.nasserkhosravi.hawasilmusicplayer.data.model.PlayListModel
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.Callable
 
 class PlayListsViewModel : ViewModel() {
     private val playLists: MutableLiveData<ArrayList<PlayListModel>> by lazy {
@@ -22,11 +23,16 @@ class PlayListsViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun fetchPlayListAsync(result: MutableLiveData<ArrayList<PlayListModel>>) {
-        Single.just("").subscribeOn(Schedulers.io())
-            .map { MediaProvider.getPlayLists() }
-            .observeOn(AndroidSchedulers.mainThread()).subscribe({
+        val runnable = Callable<ArrayList<PlayListModel>> {
+            MediaProvider.getPlayLists()
+        }
+        Single.fromCallable(runnable)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
                 result.value = it
-            }, {})
+            }, {}
+            )
     }
 
     fun removePlaylist(playlistId: Long): Boolean {

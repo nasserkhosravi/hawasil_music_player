@@ -10,19 +10,16 @@ import com.nasserkhosravi.appcomponent.ResHelper
 import com.nasserkhosravi.appcomponent.view.BaseComponentActivity
 import com.nasserkhosravi.hawasilmusicplayer.PermissionUtils
 import com.nasserkhosravi.hawasilmusicplayer.R
-import com.nasserkhosravi.hawasilmusicplayer.data.QueueBrain
+import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.UserPref
 import com.nasserkhosravi.hawasilmusicplayer.view.fragment.*
+import com.nasserkhosravi.hawasilmusicplayer.view.fragment.component.FragmentLifecycleListener
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNavigationChangeListener {
+class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNavigationChangeListener,
+    FragmentLifecycleListener {
 
-    var miniPlayerFragment: MiniPlayerFragment? = null
-    var libraryFragment: LibraryNavigatorFragment? = null
-    var searchFragment: SearchFragment? = null
-    var hawasilFragment: HawasilFragment? = null
-    var foldersFragment: FoldersFragment? = null
-    val navigationFragment: NavigationFragment? = null
+    var playerFragment: SongPlayerFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,27 +36,22 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
         if (UserPref.hasQueue()) {
             val queueData = UserPref.retrieveQueueData()
             if (queueData != null) {
-                QueueBrain.setData(queueData)
+                MediaTerminal.queue = (queueData)
             }
-            QueueBrain.data.isSongRestored = true
+            MediaTerminal.queue.isSongRestored = true
         }
-        QueueBrain.startAndBindService()
-
-        PermissionUtils.requestPhoneState(this)
+        MediaTerminal.startAndBindService()
         PermissionUtils.requestWritePermission(this)
-
+        //we can use dagger
         val navigationFragment = NavigationFragment.newInstance()
         navigationFragment.listener = this
 
-        miniPlayerFragment = MiniPlayerFragment.newInstance()
-        foldersFragment = FoldersFragment.newInstance()
-        libraryFragment = LibraryNavigatorFragment.newInstance()
-        hawasilFragment = HawasilFragment.newInstance()
-        searchFragment = SearchFragment.newInstance()
+        val miniPlayerFragment = MiniPlayerFragment.newInstance()
+        val libraryFragment = LibraryNavigatorFragment.newInstance()
 
         supportFragmentManager.beginTransaction()
-            .replace(R.id.flBody, libraryFragment!!)
-            .replace(R.id.flMiniPlayer, miniPlayerFragment!!, MiniPlayerFragment.tag())
+            .replace(R.id.flBody, libraryFragment)
+            .replace(R.id.flMiniPlayer, miniPlayerFragment, MiniPlayerFragment.tag())
             .replace(R.id.flNavigation, navigationFragment)
             .commit()
         flMiniPlayer.setOnClickListener(this)
@@ -68,34 +60,49 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
     override fun onClick(v: View) {
         when (v.id) {
             R.id.flMiniPlayer -> {
-                val playerFragment = SongPlayerFragment.newInstance()
-                supportFragmentManager.beginTransaction().replace(R.id.flPlayer, playerFragment, SongPlayerFragment.tag())
+                playerFragment = SongPlayerFragment.newInstance()
+                playerFragment!!.lifecycleListener = (object :
+                    FragmentLifecycleListener {
+                    override fun onStartFragment() {
+                        flPlayer!!.visibility = View.VISIBLE
+                        layoutBody!!.visibility = View.GONE
+                    }
+
+                    override fun onStopFragment() {
+                        flPlayer!!.visibility = View.GONE
+                        layoutBody!!.visibility = View.VISIBLE
+                    }
+
+                    override fun onDestroyViewFragment() {
+                        playerFragment?.lifecycleListener = null
+                    }
+                })
+                supportFragmentManager.beginTransaction().replace(R.id.flPlayer, playerFragment!!, SongPlayerFragment.tag())
                     .addToBackStack("song player")
                     .commit()
             }
         }
     }
 
-    override fun onDestroy() {
+    override fun onDestroyFragment() {
         super.onDestroy()
-        UserPref.saveQueueData(QueueBrain.data)
+        UserPref.saveQueueData(MediaTerminal.queue)
         flMiniPlayer.setOnClickListener(null)
-        navigationFragment?.listener = null
     }
 
     override fun onNavigationChanged(view: View, position: Int) {
         when (view.id) {
             R.id.itemLibrary -> {
-                replaceFragment(R.id.flBody, libraryFragment!!)
+                replaceFragment(R.id.flBody, LibraryNavigatorFragment.newInstance())
             }
             R.id.itemFolder -> {
-                replaceFragment(R.id.flBody, foldersFragment!!)
+                replaceFragment(R.id.flBody, FoldersFragment.newInstance())
             }
             R.id.itemSearch -> {
-                replaceFragment(R.id.flBody, searchFragment!!)
+                replaceFragment(R.id.flBody, SearchFragment.newInstance())
             }
             R.id.itemHawasil -> {
-                replaceFragment(R.id.flBody, hawasilFragment!!)
+                replaceFragment(R.id.flBody, HawasilFragment.newInstance())
             }
         }
     }

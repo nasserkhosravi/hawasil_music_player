@@ -5,7 +5,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
-import com.nasserkhosravi.appcomponent.view.adapter.ClickListenerBinder
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.data.model.FlatFolderModel
 
@@ -26,8 +25,6 @@ class FolderAdapter : BaseComponentAdapter<FlatFolderModel>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvTitle: TextView = view.findViewById(R.id.tvTitle)
-
-        @ClickListenerBinder
         val imgMore = view.findViewById<ImageView>(R.id.imgMore)
     }
 }

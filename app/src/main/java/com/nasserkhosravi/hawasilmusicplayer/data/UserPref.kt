@@ -2,10 +2,10 @@ package com.nasserkhosravi.hawasilmusicplayer.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.nasserkhosravi.hawasilmusicplayer.data.model.QueueModel
 
 object UserPref {
 
-    //    private lateinit var editor: SharedPreferences.Editor
     private lateinit var reader: SharedPreferences
 
     fun build(context: Context, name: String) {
@@ -20,15 +20,15 @@ object UserPref {
         reader.edit().putBoolean("hasQueue", true).apply()
     }
 
-    fun saveQueueData(data: QueueData) {
-        reader.edit().putString("QueueData", data.toJson()).apply()
+    fun saveQueueData(data: QueueModel) {
+        reader.edit().putString("QueueModel", data.toJson()).apply()
         enableHasQueue()
     }
 
-    fun retrieveQueueData(): QueueData? {
-        val json = reader.getString("QueueData", null)
+    fun retrieveQueueData(): QueueModel? {
+        val json = reader.getString("QueueModel", null)
         if (json != null) {
-            return QueueData.fromJson(json)
+            return QueueModel.fromJson(json)
         }
         return null
     }

@@ -10,7 +10,7 @@ class AudioNoisyReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
-            QueueBrain.pause()
+            MediaTerminal.pause()
         }
     }
 

@@ -29,6 +29,10 @@ object DataFakeFactory {
         return m1
     }
 
+    fun getPureSong(): SongModel {
+        return SongModel(1, "", "", "", "", 100)
+    }
+
     fun getArtist(): List<ArtistModel> {
         val taham = ArtistModel(1, "Taham")
         return arrayListOf(taham)
@@ -50,8 +54,8 @@ object DataFakeFactory {
         return listOf(PlayListModel(1, "Hip Hop", arrayListOf()))
     }
 
-    fun getQueueData(): QueueData {
-        val data = QueueData()
+    fun getQueueData(): QueueModel {
+        val data = QueueModel()
         data.isSongRestored = true
         return data
     }

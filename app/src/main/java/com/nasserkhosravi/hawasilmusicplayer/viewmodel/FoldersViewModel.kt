@@ -10,6 +10,7 @@ import com.nasserkhosravi.hawasilmusicplayer.data.model.FlatFolderModel
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.Callable
 
 class FoldersViewModel : ViewModel() {
 
@@ -24,14 +25,17 @@ class FoldersViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun fetchFoldersAsync(result: MutableLiveData<List<FlatFolderModel>>) {
-        Single.just("").subscribeOn(Schedulers.io())
-            .map {
-                MediaProvider.checkCacheFoldersContainSong()
-                FolderCache.flatFolders
-            }
-            .observeOn(AndroidSchedulers.mainThread()).subscribe({
+        val runnable = Callable<List<FlatFolderModel>> {
+            MediaProvider.checkCacheFoldersContainSong()
+            FolderCache.flatFolders
+        }
+        Single.fromCallable(runnable)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
                 result.value = it
-            }, {})
+            }, {}
+            )
     }
 
 }

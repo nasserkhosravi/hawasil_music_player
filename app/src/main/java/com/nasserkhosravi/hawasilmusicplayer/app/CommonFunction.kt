@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
-import io.reactivex.disposables.Disposable
 
 fun Fragment.formatString(@StringRes id: Int, vararg args: Any?): String {
     return String.format(getString(id), *args)
@@ -17,12 +16,6 @@ fun Fragment.formatString(@StringRes id: Int, vararg args: Any?): String {
 fun setOnClickListeners(listener: View.OnClickListener?, vararg views: View) {
     for (view in views) {
         view.setOnClickListener(listener)
-    }
-}
-
-fun safeDispose(vararg disposables: Disposable?) {
-    for (it in disposables) {
-        it?.dispose()
     }
 }
 

@@ -7,7 +7,6 @@ import kotlinx.android.parcel.Parcelize
 /**
  * Holds small model
  */
-
 @Parcelize
 data class FlatFolderModel(val name: String, val path: String) : Parcelable {
     var songs: ArrayList<Long>? = null

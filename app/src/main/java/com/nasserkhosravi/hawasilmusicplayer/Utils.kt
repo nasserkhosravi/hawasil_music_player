@@ -4,16 +4,10 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
-import android.os.Environment
-import android.os.storage.StorageManager
-import android.text.format.Formatter
 import android.util.Log
 import androidx.annotation.DimenRes
 import androidx.core.app.ActivityCompat
 import com.nasserkhosravi.appcomponent.AppContext
-import java.io.File
-import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.TimeUnit
 
 object FormatUtils {
@@ -28,52 +22,6 @@ object FormatUtils {
     fun toSecond(p: Long): Long {
         return TimeUnit.MILLISECONDS.toSeconds(p)
     }
-}
-
-object KFileUtils {
-    const val LOG_TAG = "FileUtils"
-
-    fun tag(): String {
-        return KFileUtils::class.java.simpleName
-    }
-
-    fun getListOfVolumes() {
-        val storageManager = AppContext.get().getSystemService(Context.STORAGE_SERVICE) as StorageManager
-        try {
-            val volumes = storageManager.javaClass.getMethod("getVolumePaths", *arrayOfNulls(0)).invoke(
-                storageManager,
-                *arrayOfNulls(0)
-            ) as Array<String>
-            for (i in 0 until volumes.size) {
-                Log.d(tag(), volumes[i])
-                val file = File(volumes[i])
-                Log.d(tag(), "Free Space:" + format(file.freeSpace) + "Total Space:" + format(file.totalSpace))
-                Log.d(tag(), "Status of the Media:" + Environment.getExternalStorageState(file))
-            }
-        } catch (e: IllegalAccessException) {
-            e.printStackTrace()
-        } catch (e: InvocationTargetException) {
-            e.printStackTrace()
-        } catch (e: NoSuchMethodException) {
-            e.printStackTrace()
-        }
-
-    }
-
-    private fun format(bytes: Long): String {
-        return Formatter.formatShortFileSize(AppContext.get(), bytes)
-    }
-
-    //not tested
-    fun getListVolumesN() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val storageManager = AppContext.get().getSystemService(Context.STORAGE_SERVICE) as StorageManager
-            storageManager.storageVolumes.forEach {
-                Log.d(tag(), "${it.getDescription(AppContext.get())}: ")
-            }
-        }
-    }
-
 }
 
 object PermissionUtils {

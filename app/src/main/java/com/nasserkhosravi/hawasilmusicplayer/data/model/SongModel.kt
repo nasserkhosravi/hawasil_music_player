@@ -29,9 +29,8 @@ data class SongModel(
 ) : Parcelable {
 
     var status = PAUSE
-    var songPassed = 0L
-    //    an example of uri is:
-//    content://media/external/audio/albumart/2
+    var passedDuration = 0L
+    //an example of uri is: content://media/external/audio/albumart/2
     var artUri: Uri? = null
 
     constructor(parcel: Parcel) : this(
@@ -42,7 +41,7 @@ data class SongModel(
         parcel.readString(),
         parcel.readLong()
     ) {
-        songPassed = parcel.readLong()
+        passedDuration = parcel.readLong()
         artUri = parcel.readParcelable(Uri::class.java.classLoader)
     }
 
@@ -80,7 +79,7 @@ data class SongModel(
         parcel.writeString(artist)
         parcel.writeString(album)
         parcel.writeLong(id)
-        parcel.writeLong(songPassed)
+        parcel.writeLong(passedDuration)
         parcel.writeLong(duration)
         parcel.writeParcelable(artUri, flags)
     }
@@ -89,9 +88,15 @@ data class SongModel(
         return 0
     }
 
-    fun reset() {
-        songPassed = 0
+    fun resetToPassiveState() {
+        passedDuration = 0
         status = SongStatus.PAUSE
+    }
+
+    fun computePassedDuration(): Float {
+        val duration = duration.toFloat()
+        val current = passedDuration.toFloat()
+        return (current / duration)
     }
 
     companion object CREATOR : Parcelable.Creator<SongModel> {
@@ -123,7 +128,7 @@ class SongModelAdapter : JsonDeserializer<SongModel>, JsonSerializer<SongModel> 
         json.addProperty("artist", src.artist)
         json.addProperty("album", src.album)
         json.addProperty("duration", src.duration)
-        json.addProperty("songPassed", src.songPassed)
+        json.addProperty("passedDuration", src.passedDuration)
         json.addProperty("isPlaying", src.isPlaying())
         json.addProperty("artUri", src.artUri?.toString())
         return json
@@ -137,11 +142,11 @@ class SongModelAdapter : JsonDeserializer<SongModel>, JsonSerializer<SongModel> 
         val album = json.get("album").asString
         val artist = json.get("artist").asString
         val duration = json.get("duration").asLong
-        val songPassed = json.get("songPassed").asLong
+        val songPassed = json.get("passedDuration").asLong
         val isPlaying = json.get("isPlaying").asBoolean
         val artUri = json.get("artUri").asString
         val model = SongModel(id, path, title, artist, album, duration)
-        model.songPassed = songPassed
+        model.passedDuration = songPassed
         model.setStatus(isPlaying)
         if (artUri != null) {
             model.artUri = Uri.parse(artUri)

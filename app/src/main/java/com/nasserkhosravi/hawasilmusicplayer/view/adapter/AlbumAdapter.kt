@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
-import com.nasserkhosravi.appcomponent.view.adapter.ClickListenerBinder
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.data.model.AlbumModel
 
@@ -35,8 +34,6 @@ class AlbumAdapter : BaseComponentAdapter<AlbumModel>() {
         val imgArt = view.findViewById<ImageView>(R.id.imgThumb)
         val tvTitle: TextView = view.findViewById(R.id.tvTitle)
         val tvArtist: TextView = view.findViewById(R.id.tvArtist)
-
-        @ClickListenerBinder
         val imgMore = view.findViewById<ImageView>(R.id.imgMore)
     }
 }
