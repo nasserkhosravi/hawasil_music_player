@@ -47,6 +47,7 @@ class QueueModel {
     fun active(position: Int) {
         selected = items[position]
         selectedIndex = position
+        selected!!.status = SongStatus.PLAYING
     }
 
     fun hasNextItem(): Boolean {
@@ -126,6 +127,10 @@ class QueueModel {
         if (isShuffle != other.isShuffle) return false
 
         return true
+    }
+
+    fun deActiveSelected() {
+        items[selectedIndex].resetToPassiveState()
     }
 
     companion object {

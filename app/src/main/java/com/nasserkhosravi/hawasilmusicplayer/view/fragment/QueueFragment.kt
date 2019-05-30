@@ -10,25 +10,38 @@ import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.data.model.*
+import com.nasserkhosravi.hawasilmusicplayer.di.DaggerQueueFragmentComponent
+import com.nasserkhosravi.hawasilmusicplayer.di.QueueFragmentModule
+import com.nasserkhosravi.hawasilmusicplayer.di.RecycleItemListenerModule
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.QueueAdapter
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.RecycleItemListener
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.QueueViewModel
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_queue.*
 import kotlinx.android.synthetic.main.inc_toolbar.*
+import javax.inject.Inject
 
 class QueueFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickListener {
     override val layoutRes: Int
         get() = R.layout.fragment_queue
 
-    private val adapter = QueueAdapter()
-    private lateinit var viewModel: QueueViewModel
-    private lateinit var itemTouchListener: RecycleItemListener
+    @Inject
+    lateinit var adapter: QueueAdapter
+    @Inject
+    lateinit var viewModel: QueueViewModel
+    @Inject
+    lateinit var itemTouchListener: RecycleItemListener
+
     private var shuffleModeDisposable: Disposable? = null
     var imgBackClickListener: View.OnClickListener? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        DaggerQueueFragmentComponent.builder()
+            .queueFragmentModule(QueueFragmentModule(this))
+            .recycleItemListenerModule(RecycleItemListenerModule(context!!, this))
+            .build()
+            .inject(this)
         val queueId = arguments!!.getString("id")!!
         val type = arguments!!.getInt("type")
         val title = arguments!!.getString("title")!!

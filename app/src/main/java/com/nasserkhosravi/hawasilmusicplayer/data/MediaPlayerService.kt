@@ -7,27 +7,28 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
-import io.reactivex.android.schedulers.AndroidSchedulers
+import com.nasserkhosravi.hawasilmusicplayer.di.DaggerMediaPlayerServiceComponent
+import com.nasserkhosravi.hawasilmusicplayer.di.MediaPlayerServiceModule
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
-    private val iBinder = LocalBinder()
-    //inject
-    private var mediaPlayer: MediaPlayer? = null
-    //inject
-    var progressPublisher = SuspendableObservable(10, TimeUnit.MILLISECONDS)
-    //inject
-    private lateinit var audioNoisyReceiver: AudioNoisyReceiver
+    private val serviceBinder = LocalBinder()
+
+    @Inject
+    lateinit var mediaPlayer: MediaPlayer
+    @Inject
+    lateinit var progressPublisher: SuspendableObservable
+    @Inject
+    lateinit var audioNoisyReceiver: AudioNoisyReceiver
 
     override fun onCreate() {
         super.onCreate()
         isActive = true
-        progressPublisher.observable =
-            progressPublisher.observable.observeOn(AndroidSchedulers.mainThread()).map { computePassedDuration() }
-        initMediaPlayer()
-
-        audioNoisyReceiver = AudioNoisyReceiver()
+        DaggerMediaPlayerServiceComponent.builder().mediaPlayerServiceModule(MediaPlayerServiceModule(this))
+            .build()
+            .inject(this)
+        mediaPlayer.setOnPreparedListener(this)
         registerReceiver(audioNoisyReceiver, AudioNoisyReceiver.createIntentFilter())
     }
 
@@ -36,52 +37,45 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        return iBinder
-    }
-
-    private fun initMediaPlayer() {
-        if (mediaPlayer == mediaPlayer) {
-            mediaPlayer = MediaPlayer()
-        }
-        mediaPlayer!!.setOnPreparedListener(this)
+        return serviceBinder
     }
 
     fun playFromLastPosition() {
-        if (!mediaPlayer!!.isPlaying) {
+        if (!mediaPlayer.isPlaying) {
             //todo:song passed dependency, remove it
-            mediaPlayer?.seekTo(MediaTerminal.queue.selected!!.passedDuration.toInt())
-            mediaPlayer!!.start()
+            mediaPlayer.seekTo(MediaTerminal.queue.selected!!.passedDuration.toInt())
+            mediaPlayer.start()
             progressPublisher.resume()
         }
     }
 
     fun pause() {
-        mediaPlayer?.pause()
+        mediaPlayer.pause()
         progressPublisher.pause()
     }
 
     fun resetMediaPlayer() {
-        mediaPlayer!!.stop()
-        mediaPlayer!!.reset()
+        mediaPlayer.stop()
+        mediaPlayer.reset()
     }
 
     fun prepareSongAndPlay(path: String) {
-        mediaPlayer!!.setAudioStreamType(AudioManager.STREAM_MUSIC)
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
         try {
-            mediaPlayer!!.setDataSource(path)
+            mediaPlayer.setDataSource(path)
         } catch (e: IOException) {
             e.printStackTrace()
             stopSelf()
         }
-        mediaPlayer!!.prepareAsync()
+        mediaPlayer.prepareAsync()
     }
 
     fun seekTo(progress: Int) {
-        mediaPlayer?.seekTo(progress)
+        mediaPlayer.seekTo(progress)
     }
 
     fun getCurrentPosition(): Int {
-        return mediaPlayer!!.currentPosition
+        return mediaPlayer.currentPosition
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -92,18 +86,18 @@ class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
         super.onTaskRemoved(rootIntent)
     }
 
-    private fun computePassedDuration(): Float {
-        val duration = mediaPlayer!!.duration.toFloat()
-        val current = mediaPlayer!!.currentPosition.toFloat()
+    fun computePassedDuration(): Float {
+        val duration = mediaPlayer.duration.toFloat()
+        val current = mediaPlayer.currentPosition.toFloat()
         return (current / duration)
     }
 
     fun isReadyToComputePassedDuration(): Boolean {
-        return mediaPlayer!!.currentPosition > 0
+        return mediaPlayer.currentPosition > 0
     }
 
     fun release() {
-        mediaPlayer?.release()
+        mediaPlayer.release()
     }
 
 

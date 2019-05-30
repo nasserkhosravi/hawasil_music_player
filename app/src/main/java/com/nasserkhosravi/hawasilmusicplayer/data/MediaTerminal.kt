@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.media.AudioManager
 import android.os.IBinder
-import androidx.media.AudioAttributesCompat
 import com.nasserkhosravi.appcomponent.AppContext
 import com.nasserkhosravi.hawasilmusicplayer.FormatUtils.toSecond
 import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusHelper
@@ -14,7 +13,10 @@ import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusRequestCompat
 import com.nasserkhosravi.hawasilmusicplayer.data.model.QueueModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
+import com.nasserkhosravi.hawasilmusicplayer.di.DaggerMediaTerminalComponent
+import com.nasserkhosravi.hawasilmusicplayer.di.MediaTerminalModule
 import io.reactivex.disposables.Disposable
+import javax.inject.Inject
 
 object MediaTerminal : AudioManager.OnAudioFocusChangeListener {
     private var isServiceBound = false
@@ -22,7 +24,11 @@ object MediaTerminal : AudioManager.OnAudioFocusChangeListener {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             playerService = (service as MediaPlayerService.LocalBinder).service
             isServiceBound = true
-            initAudioFocus()
+            DaggerMediaTerminalComponent.builder()
+                .mediaTerminalModule(MediaTerminalModule(AppContext.get(), this@MediaTerminal))
+                .build()
+                .inject(this@MediaTerminal)
+            audioFocusHelper.requestAudioFocus(audioFocusRequest)
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
@@ -32,26 +38,12 @@ object MediaTerminal : AudioManager.OnAudioFocusChangeListener {
     }
     private var finishObserver: Disposable? = null
     private var playerService: MediaPlayerService? = null
-    private val audioFocusHelper: AudioFocusHelper by lazy {
-        AudioFocusHelper(AppContext.get())
-    }
-    private lateinit var audioFocusRequest: AudioFocusRequestCompat
+
+    @set:Inject
+    lateinit var audioFocusHelper: AudioFocusHelper
+    @set:Inject
+    lateinit var audioFocusRequest: AudioFocusRequestCompat
     lateinit var queue: QueueModel
-
-    private fun initAudioFocus() {
-        val audioAttributesCompat = AudioAttributesCompat.Builder()
-            .setUsage(AudioAttributesCompat.USAGE_MEDIA)
-            .setContentType(AudioAttributesCompat.CONTENT_TYPE_MUSIC)
-            .build()
-
-        AudioFocusRequestCompat.Builder(AudioManager.AUDIOFOCUS_GAIN)
-            .setOnAudioFocusChangeListener(this@MediaTerminal)
-            .setAudioAttributes(audioAttributesCompat)
-            .build()
-
-        audioFocusHelper.requestAudioFocus(audioFocusRequest)
-
-    }
 
     override fun onAudioFocusChange(focusChange: Int) {
         when (focusChange) {
@@ -150,30 +142,18 @@ object MediaTerminal : AudioManager.OnAudioFocusChangeListener {
     }
 
     private fun resetReplacePlayPublish(position: Int) {
-        resetCurrent()
-        replaceToCurrent(position)
-        playSong(position)
+        if (queue.selectedIndex > -1) {
+            queue.deActiveSelected()
+        }
+        queue.active(position)
+        playSelectedSong()
         SongEventPublisher.newSongPlay.onNext(queue.selected!!)
         registerFinishListener()
     }
 
-    private fun playSong(position: Int) {
-        queue.selectedIndex = position
+    private fun playSelectedSong() {
         playerService!!.resetMediaPlayer()
         playerService!!.prepareSongAndPlay(queue.selected!!.path)
-    }
-
-    private fun resetCurrent() {
-        if (queue.selected != null) {
-            if (queue.selectedIndex > -1) {
-                queue.items[queue.selectedIndex].resetToPassiveState()
-            }
-        }
-    }
-
-    private fun replaceToCurrent(position: Int) {
-        queue.selected = queue.items[position]
-        queue.selected!!.status = SongStatus.PLAYING
     }
 
     private fun registerFinishListener() {

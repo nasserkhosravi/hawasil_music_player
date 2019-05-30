@@ -1,30 +1,37 @@
 package com.nasserkhosravi.hawasilmusicplayer.view.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.formatString
 import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
+import com.nasserkhosravi.hawasilmusicplayer.di.DaggerMiniPlayerFragmentComponent
+import com.nasserkhosravi.hawasilmusicplayer.di.MiniPlayerFragmentModule
+import com.nasserkhosravi.hawasilmusicplayer.view.fragment.component.BaseFragment
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.MiniPlayerViewModel
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_mini_player.*
+import javax.inject.Inject
 
-class MiniPlayerFragment : BaseComponentFragment() {
+class MiniPlayerFragment : BaseFragment() {
     override val layoutRes: Int
         get() = R.layout.fragment_mini_player
-
-    private lateinit var viewModel: MiniPlayerViewModel
-    private val compositeDisposable = CompositeDisposable()
+    @Inject
+    lateinit var viewModel: MiniPlayerViewModel
+    @Inject
+    lateinit var compositeDisposable: CompositeDisposable
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        DaggerMiniPlayerFragmentComponent.builder().miniPlayerFragmentModule(MiniPlayerFragmentModule(this))
+            .build().inject(this)
         val lastSongPlayed = viewModel.getLastSong()
         if (lastSongPlayed != null) {
             setSongInfo(lastSongPlayed)
             setBackgroundPassed((lastSongPlayed.passedDuration.toFloat() / lastSongPlayed.duration.toFloat()))
             checkButtonStatusView(lastSongPlayed.status.isPlay())
+            Log.d(tag(), "${lastSongPlayed.toJson()}: ")
         }
 
         imgPlayStatus.setOnClickListener {

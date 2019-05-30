@@ -3,16 +3,19 @@ package com.nasserkhosravi.hawasilmusicplayer.view.fragment
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.appcomponent.view.fragment.BaseComponentFragment
 import com.nasserkhosravi.hawasilmusicplayer.R
+import com.nasserkhosravi.hawasilmusicplayer.di.AlbumsFragmentModule
+import com.nasserkhosravi.hawasilmusicplayer.di.DaggerAlbumsFragmentComponent
+import com.nasserkhosravi.hawasilmusicplayer.di.RecycleItemListenerModule
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.AlbumAdapter
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.RecycleItemListener
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.AlbumsViewModel
 import kotlinx.android.synthetic.main.fragment_albums.*
 import kotlinx.android.synthetic.main.inc_toolbar.*
+import javax.inject.Inject
 
 class AlbumsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickListener {
     override val layoutRes: Int
@@ -20,12 +23,20 @@ class AlbumsFragment : BaseComponentFragment(), BaseComponentAdapter.ItemClickLi
 
     private val adapter = AlbumAdapter()
     private var queueFragment: QueueFragment? = null
-    private lateinit var viewModel: AlbumsViewModel
-    private lateinit var itemTouchListener: RecycleItemListener
+
+    @Inject
+    lateinit var viewModel: AlbumsViewModel
+    @Inject
+    lateinit var itemTouchListener: RecycleItemListener
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(AlbumsViewModel::class.java)
+        DaggerAlbumsFragmentComponent.builder()
+            .recycleItemListenerModule(RecycleItemListenerModule(context!!, this))
+            .albumsFragmentModule(AlbumsFragmentModule(this))
+            .build()
+            .inject(this)
+
         viewModel.getAlbums.observe(this, Observer {
             adapter.items = it
             rvAlbums.adapter = adapter

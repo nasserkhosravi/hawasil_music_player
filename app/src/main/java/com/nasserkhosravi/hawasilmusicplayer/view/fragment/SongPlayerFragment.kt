@@ -23,10 +23,13 @@ import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.setOnClickListeners
 import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
+import com.nasserkhosravi.hawasilmusicplayer.di.DaggerSongPlayerFragmentComponent
+import com.nasserkhosravi.hawasilmusicplayer.di.SongPlayerModule
 import com.nasserkhosravi.hawasilmusicplayer.view.fragment.component.BaseFragment
 import com.nasserkhosravi.hawasilmusicplayer.viewmodel.SongPlayerViewModel
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_player.*
+import javax.inject.Inject
 
 class SongPlayerFragment : BaseFragment(), View.OnClickListener {
 
@@ -34,11 +37,14 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
         get() = R.layout.fragment_player
 
     private var seekBarChangeListener: SeekBar.OnSeekBarChangeListener? = null
-    private val compositeDisposable = CompositeDisposable()
-    private lateinit var viewModel: SongPlayerViewModel
+    @Inject
+    lateinit var compositeDisposable: CompositeDisposable
+    @Inject
+    lateinit var viewModel: SongPlayerViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        DaggerSongPlayerFragmentComponent.builder().songPlayerModule(SongPlayerModule(this)).build().inject(this)
 //        seek bar has un wanted padding and we don't want it's padding
         skbTimeline.setPadding(0, 0, 0, 0)
 

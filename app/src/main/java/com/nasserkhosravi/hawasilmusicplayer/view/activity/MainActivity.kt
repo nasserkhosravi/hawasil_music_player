@@ -16,8 +16,7 @@ import com.nasserkhosravi.hawasilmusicplayer.view.fragment.*
 import com.nasserkhosravi.hawasilmusicplayer.view.fragment.component.FragmentLifecycleListener
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNavigationChangeListener,
-    FragmentLifecycleListener {
+class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNavigationChangeListener {
 
     var playerFragment: SongPlayerFragment? = null
 
@@ -84,7 +83,7 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
         }
     }
 
-    override fun onDestroyFragment() {
+    override fun onDestroy() {
         super.onDestroy()
         UserPref.saveQueueData(MediaTerminal.queue)
         flMiniPlayer.setOnClickListener(null)
