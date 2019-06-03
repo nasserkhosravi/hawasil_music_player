@@ -52,7 +52,7 @@ class UserPrefTest {
         val queueDataRetrieve = UserPref.retrieveQueueData()!!
 
         assertEquals(queueDataSave.queueId, queueDataRetrieve.queueId)
-        assertEquals(queueDataSave.isShuffle, queueDataRetrieve.isShuffle)
+        assertEquals(queueDataSave.isShuffled, queueDataRetrieve.isShuffled)
         assertEquals(queueDataSave.isEnableRepeat, queueDataRetrieve.isEnableRepeat)
         assertEquals(queueDataSave.selectedIndex, queueDataRetrieve.selectedIndex)
         assertEquals(queueDataSave.selected, queueDataRetrieve.selected)

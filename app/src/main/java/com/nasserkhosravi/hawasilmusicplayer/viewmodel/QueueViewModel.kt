@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nasserkhosravi.hawasilmusicplayer.data.MediaProvider
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
+import com.nasserkhosravi.hawasilmusicplayer.data.UIMediaCommand
 import com.nasserkhosravi.hawasilmusicplayer.data.model.QueueType
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import io.reactivex.Single
@@ -68,7 +68,7 @@ class QueueViewModel : ViewModel() {
     }
 
     fun onSongClick(position: Int) {
-        MediaTerminal.processRequest(songs.value!!, position, queueId)
+        UIMediaCommand.processQueue((songs.value as ArrayList<SongModel>?)!!, position, queueId)
     }
 
     fun tag(): String {

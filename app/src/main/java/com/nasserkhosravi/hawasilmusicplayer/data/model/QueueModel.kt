@@ -18,7 +18,7 @@ class QueueModel {
     var isEnableRepeat = false
 
     @Expose
-    var isShuffle = false
+    var isShuffled = false
         private set
 
     fun toJson(): String {
@@ -66,8 +66,8 @@ class QueueModel {
     }
 
     fun toggleShuffle() {
-        isShuffle = !isShuffle
-        setShuffle(isShuffle)
+        isShuffled = !isShuffled
+        setShuffle(isShuffled)
     }
 
     fun toggleRepeat() {
@@ -80,7 +80,7 @@ class QueueModel {
         } else {
             unShuffleItems()
         }
-        this.isShuffle = isEnable
+        this.isShuffled = isEnable
     }
 
     private fun shuffleItems() {
@@ -96,7 +96,7 @@ class QueueModel {
         items.clear()
         selectedIndex = -1
         queueId = ""
-        isShuffle = false
+        isShuffled = false
         isEnableRepeat = false
         selected = null
     }
@@ -108,7 +108,7 @@ class QueueModel {
         result = 31 * result + selectedIndex
         result = 31 * result + queueId.hashCode()
         result = 31 * result + isEnableRepeat.hashCode()
-        result = 31 * result + isShuffle.hashCode()
+        result = 31 * result + isShuffled.hashCode()
         return result
     }
 
@@ -124,7 +124,7 @@ class QueueModel {
         if (selectedIndex != other.selectedIndex) return false
         if (queueId != other.queueId) return false
         if (isEnableRepeat != other.isEnableRepeat) return false
-        if (isShuffle != other.isShuffle) return false
+        if (isShuffled != other.isShuffled) return false
 
         return true
     }

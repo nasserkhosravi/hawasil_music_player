@@ -13,7 +13,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
 import com.nasserkhosravi.hawasilmusicplayer.MyRes
 import com.nasserkhosravi.hawasilmusicplayer.R
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
+import com.nasserkhosravi.hawasilmusicplayer.data.QueueManager
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout
 import java.io.FileNotFoundException
@@ -40,7 +40,7 @@ class QueueAdapter : BaseComponentAdapter<SongModel>() {
 
         Glide.with(vh.imgThumb).load(art).apply(RequestOptions.circleCropTransform()).into(vh.imgThumb)
         val shadowLayout = vh.itemView as ShadowLayout
-        val selectedSong = MediaTerminal.queue.selected
+        val selectedSong = QueueManager.get().queue.selected
         if (selectedSong != null && model.id == selectedSong.id) {
             selectedPosition = position
             shadowLayout.shadowColor = getColorRes(R.color.enabled_item)

@@ -2,24 +2,25 @@ package com.nasserkhosravi.hawasilmusicplayer.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
-import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
+import com.nasserkhosravi.hawasilmusicplayer.data.QueueEvents
+import com.nasserkhosravi.hawasilmusicplayer.data.QueueManager
+import com.nasserkhosravi.hawasilmusicplayer.data.UIMediaCommand
 import com.nasserkhosravi.hawasilmusicplayer.data.UserPref
 
 class MiniPlayerViewModel(app: Application) : AndroidViewModel(app) {
 
-    fun getNewSongPlay() = SongEventPublisher.newSongPlay
+    fun getNewSongPlay() = QueueEvents.newSongPlay
 
-    fun getSongStatus() = SongEventPublisher.songStatusChange
+    fun getSongStatus() = QueueEvents.songStatus
 
-    fun getSongComplete() = SongEventPublisher.songComplete
+    fun getSongComplete() = QueueEvents.songComplete
 
-    fun getSongPassed() = SongEventPublisher.songPassedChange
+    fun getSongPassed() = QueueEvents.songPassed
 
-    fun reversePlay() = MediaTerminal.togglePlay()
+    fun reversePlay() = UIMediaCommand.togglePlay()
 
     fun hasQueue() = UserPref.hasQueue()
 
-    fun getLastSong() = MediaTerminal.queue.selected
+    fun getCurrentSong() = QueueManager.get().queue.selected
 
 }

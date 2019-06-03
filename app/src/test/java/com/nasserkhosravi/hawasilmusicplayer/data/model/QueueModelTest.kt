@@ -151,15 +151,15 @@ class QueueModelTest {
         }
         queue.items.addAll(orderItems)
 
-        assertFalse(queue.isShuffle)
+        assertFalse(queue.isShuffled)
         assertEquals(queue.items, orderItems)
 
         queue.toggleShuffle()
-        assertTrue(queue.isShuffle)
+        assertTrue(queue.isShuffled)
         assertNotEquals(queue.items, orderItems)
 
         queue.toggleShuffle()
-        assertFalse(queue.isShuffle)
+        assertFalse(queue.isShuffled)
         assertEquals(queue.items, orderItems)
     }
 

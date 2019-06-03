@@ -9,8 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.data.FavoriteManager
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
-import com.nasserkhosravi.hawasilmusicplayer.data.SongEventPublisher
+import com.nasserkhosravi.hawasilmusicplayer.data.QueueEvents
+import com.nasserkhosravi.hawasilmusicplayer.data.QueueManager
+import com.nasserkhosravi.hawasilmusicplayer.data.UIMediaCommand
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import java.io.FileNotFoundException
 
@@ -22,56 +23,59 @@ class SongPlayerViewModel : ViewModel() {
     private var favorite = MutableLiveData<Boolean>()
 
     init {
-        val data = MediaTerminal.queue
+        val data = QueueManager.get().queue
         repeat.value = data.isEnableRepeat
-        shuffle.value = data.isShuffle
+        shuffle.value = data.isShuffled
         favorite.value = FavoriteManager.isFavorite(data.selected!!.id)
     }
 
     val getRepeat: LiveData<Boolean>
         get() = repeat
 
+    val getShuffle: LiveData<Boolean>
+        get() = shuffle
+
     val getFavorite: LiveData<Boolean>
         get() = favorite
 
-    fun getShuffleEvent() = SongEventPublisher.shuffleModeChange
+    fun getShuffleEvent() = QueueEvents.shuffleMode
 
-    fun getNewSongEvent() = SongEventPublisher.newSongPlay
+    fun getNewSongEvent() = QueueEvents.newSongPlay
 
-    fun getSongStatusEvent() = SongEventPublisher.songStatusChange
+    fun getSongStatusEvent() = QueueEvents.songStatus
 
-    fun getSongCompleteEvent() = SongEventPublisher.songComplete
+    fun getSongCompleteEvent() = QueueEvents.songComplete
 
-    fun getSongChangeEvent() = SongEventPublisher.songPassedChange
+    fun getSongChangeEvent() = QueueEvents.songPassed
 
     fun seekTo(progress: Int) {
-        MediaTerminal.seekTo(progress)
+        UIMediaCommand.seekTo(progress)
     }
 
     fun reversePlay() {
-        MediaTerminal.togglePlay()
+        UIMediaCommand.togglePlay()
     }
 
     fun playPrevious() {
-        MediaTerminal.playPrevious()
+        UIMediaCommand.playPrevious()
     }
 
     fun playNext() {
-        MediaTerminal.playNext()
+        UIMediaCommand.playNext()
     }
 
     fun toggleRepeat() {
-        MediaTerminal.toggleRepeat()
+        UIMediaCommand.nextRepeatMode()
         repeat.value = !repeat.value!!
     }
 
     fun toggleShuffle() {
-        MediaTerminal.toggleShuffle()
+        UIMediaCommand.toggleShuffle()
         shuffle.value = !shuffle.value!!
     }
 
     fun getArt(context: Context): Bitmap {
-        val model = MediaTerminal.queue.selected!!
+        val model = getCurrentSong()
         return if (model.artUri != null) {
             try {
                 MediaStore.Images.Media.getBitmap(context.contentResolver, model.artUri!!)
@@ -85,11 +89,11 @@ class SongPlayerViewModel : ViewModel() {
 
     fun toggleFavorite() {
         if (favorite.value!!) {
-            if (FavoriteManager.remove(MediaTerminal.queue.selected!!.id)) {
+            if (FavoriteManager.remove(getCurrentSong().id)) {
                 favorite.value = false
             }
         } else {
-            if (FavoriteManager.add(MediaTerminal.queue.selected!!.id)) {
+            if (FavoriteManager.add(getCurrentSong().id)) {
                 favorite.value = true
             }
         }
@@ -103,7 +107,7 @@ class SongPlayerViewModel : ViewModel() {
     }
 
     fun getCurrentSong(): SongModel {
-        return MediaTerminal.queue.selected!!
+        return QueueManager.get().queue.selected!!
     }
 
 }

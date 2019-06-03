@@ -4,18 +4,20 @@ import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
 import io.reactivex.subjects.PublishSubject
 
-object SongEventPublisher {
+object QueueEvents {
 
     val newSongPlay = PublishSubject.create<SongModel>()
     val songComplete = PublishSubject.create<Any>()
-    val songStatusChange = PublishSubject.create<SongStatus>()
-    val shuffleModeChange = PublishSubject.create<Boolean>()
-    val songPassedChange = PublishSubject.create<Long>()
+    val songStatus = PublishSubject.create<SongStatus>()
+    val shuffleMode = PublishSubject.create<Boolean>()
+    val songPassed = PublishSubject.create<Long>()
+    val queueCompleted = PublishSubject.create<Any>()
 
     init {
         newSongPlay.publish().autoConnect()
         songComplete.publish().autoConnect()
-        songStatusChange.publish().autoConnect()
-        songPassedChange.publish().autoConnect()
+        songStatus.publish().autoConnect()
+        songPassed.publish().autoConnect()
+        queueCompleted.publish().autoConnect()
     }
 }

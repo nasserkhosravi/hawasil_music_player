@@ -1,16 +1,21 @@
 package com.nasserkhosravi.hawasilmusicplayer.di
 
 import android.app.Application
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.media.AudioAttributesCompat
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
-import com.nasserkhosravi.hawasilmusicplayer.data.AudioNoisyReceiver
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaPlayerService
-import com.nasserkhosravi.hawasilmusicplayer.data.SuspendableObservable
+import com.nasserkhosravi.hawasilmusicplayer.MediaStyleNotificationBuilder
+import com.nasserkhosravi.hawasilmusicplayer.data.*
 import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusHelper
 import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusRequestCompat
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
@@ -46,7 +51,7 @@ class AppModule {
 }
 
 @Module
-class MediaTerminalModule(
+class AudioFocusModule(
     private val context: Context,
     private val audioFocusChangeListener: AudioManager.OnAudioFocusChangeListener
 ) {
@@ -88,6 +93,77 @@ class MediaPlayerServiceModule(private val service: MediaPlayerService) {
     @Singleton
     @Provides
     fun provideMediaPlayer() = MediaPlayer()
+}
+
+@Module
+class MediaSessionModule(
+    private val service: Service,
+    private val mediaSessionTag: String
+) {
+    @Singleton
+    @Provides
+    fun provideMediaSessionCompat(mediaSessionCallBack: MediaSessionCallBack): MediaSessionCompat {
+        val sessionActivityPendingIntent =
+            service.packageManager?.getLaunchIntentForPackage(service.packageName)?.let { sessionIntent ->
+                PendingIntent.getActivity(service, 0, sessionIntent, 0)
+            }
+        return MediaSessionCompat(service, mediaSessionTag)
+            .apply {
+                setSessionActivity(sessionActivityPendingIntent)
+                isActive = true
+                setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+                setCallback(mediaSessionCallBack)
+                if (QueueManager.get().queue.isShuffled) {
+                    setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL)
+                }
+                if (QueueManager.get().queue.isEnableRepeat) {
+                    setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL)
+                }
+            }
+    }
+
+    @Singleton
+    @Provides
+    fun provideMediaSessionCallBack() = MediaSessionCallBack(QueueManager.get())
+
+    @Singleton
+    @Provides
+    fun providePlayBackState(): PlaybackStateCompat.Builder {
+        return PlaybackStateCompat.Builder().setActions(
+            PlaybackStateCompat.ACTION_PLAY_PAUSE
+                    or PlaybackStateCompat.ACTION_PLAY
+                    or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                    or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideMediaController(mediaSession: MediaSessionCompat) = MediaControllerCompat(service, mediaSession)
+
+    @Singleton
+    @Provides
+    fun provideMediaControllerCallBack(
+        mediaSession: MediaSessionCompat,
+        mediaController: MediaControllerCompat,
+        notificationBuilder: MediaStyleNotificationBuilder,
+        notificationManager: NotificationManagerCompat
+    ): MediaControllerCallBack {
+        return MediaControllerCallBack(service, mediaSession, mediaController, notificationBuilder, notificationManager)
+    }
+
+}
+
+@Module
+class NotificationModule(val context: Context) {
+
+    @Singleton
+    @Provides
+    fun provideBuilder() = MediaStyleNotificationBuilder(context)
+
+    @Singleton
+    @Provides
+    fun provideManager() = NotificationManagerCompat.from(context)
 }
 
 @Module

@@ -1,11 +1,9 @@
 package com.nasserkhosravi.hawasilmusicplayer.view.fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.formatString
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.di.DaggerMiniPlayerFragmentComponent
 import com.nasserkhosravi.hawasilmusicplayer.di.MiniPlayerFragmentModule
@@ -24,14 +22,15 @@ class MiniPlayerFragment : BaseFragment() {
     lateinit var compositeDisposable: CompositeDisposable
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        DaggerMiniPlayerFragmentComponent.builder().miniPlayerFragmentModule(MiniPlayerFragmentModule(this))
+        DaggerMiniPlayerFragmentComponent.builder()
+            .miniPlayerFragmentModule(MiniPlayerFragmentModule(this))
             .build().inject(this)
-        val lastSongPlayed = viewModel.getLastSong()
+
+        val lastSongPlayed = viewModel.getCurrentSong()
         if (lastSongPlayed != null) {
             setSongInfo(lastSongPlayed)
             setBackgroundPassed((lastSongPlayed.passedDuration.toFloat() / lastSongPlayed.duration.toFloat()))
             checkButtonStatusView(lastSongPlayed.status.isPlay())
-            Log.d(tag(), "${lastSongPlayed.toJson()}: ")
         }
 
         imgPlayStatus.setOnClickListener {
@@ -56,7 +55,7 @@ class MiniPlayerFragment : BaseFragment() {
         }
         val songPassedDisposable = viewModel.getSongPassed().subscribe {
             if (it > 0) {
-                setBackgroundPassed(MediaTerminal.queue.selected!!.computePassedDuration())
+                setBackgroundPassed(viewModel.getCurrentSong()!!.computePassedDuration())
             }
         }
         compositeDisposable.add(newSongPlayDisposable)

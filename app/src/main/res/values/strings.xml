@@ -22,4 +22,10 @@
     <string name="Name">Name</string>
     <string name="Cancel">Cancel</string>
     <string name="Confirm">Confirm</string>
+    <string name="notification_channel">com.nasserkhosravi</string>
+    <string name="notification_channel_description">playing music</string>
+    <string name="notification_skip_to_previous">previous</string>
+    <string name="notification_play">play</string>
+    <string name="notification_pause">pause</string>
+    <string name="notification_skip_to_next">next</string>
 </resources>

@@ -7,7 +7,7 @@ object DataFakeFactory {
     fun getSongs(): ArrayList<SongModel> {
         val m1 = SongModel(
             1L,
-            "",
+            "/storage/5213-5AFD/Muisc/01 Shaba.mp3",
             "Shafaf",
             "Taham",
             "Degaran",

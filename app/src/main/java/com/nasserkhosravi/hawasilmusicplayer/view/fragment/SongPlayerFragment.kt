@@ -21,7 +21,6 @@ import com.nasserkhosravi.appcomponent.utils.UIUtils
 import com.nasserkhosravi.hawasilmusicplayer.FormatUtils
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.setOnClickListeners
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.di.DaggerSongPlayerFragmentComponent
 import com.nasserkhosravi.hawasilmusicplayer.di.SongPlayerModule
@@ -94,7 +93,7 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         }
         skbTimeline.setOnSeekBarChangeListener(seekBarChangeListener)
-        refreshImgShuffle(MediaTerminal.queue.isShuffle)
+        refreshImgShuffle(viewModel.getShuffle.value!!)
     }
 
     private fun setSongInfoInView(model: SongModel) {
@@ -104,13 +103,14 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
         skbTimeline.max = model.duration.toInt()
         refreshStatusView(model.status.isPlay())
         val art = viewModel.getArt(context!!)
+        refreshTimeInfo(model.passedDuration)
         generateColorPalletAndSetIt(art)
         Glide.with(this).load(art).apply(RequestOptions.circleCropTransform()).into(imgPlayer)
     }
 
-    private fun refreshTimeInfo(songPassed: Long) {
-        skbTimeline.progress = songPassed.toInt()
-        tvCurrentDuration.text = FormatUtils.milliSeconds(songPassed)
+    private fun refreshTimeInfo(passedDuration: Long) {
+        skbTimeline.progress = passedDuration.toInt()
+        tvCurrentDuration.text = FormatUtils.milliSeconds(passedDuration)
     }
 
     override fun onClick(v: View) {
@@ -220,6 +220,4 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
             return SongPlayerFragment::class.java.simpleName
         }
     }
-
-
 }

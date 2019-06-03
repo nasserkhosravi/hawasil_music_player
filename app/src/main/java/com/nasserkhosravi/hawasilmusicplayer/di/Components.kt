@@ -2,7 +2,6 @@ package com.nasserkhosravi.hawasilmusicplayer.di
 
 import com.nasserkhosravi.hawasilmusicplayer.app.App
 import com.nasserkhosravi.hawasilmusicplayer.data.MediaPlayerService
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaTerminal
 import com.nasserkhosravi.hawasilmusicplayer.view.fragment.*
 import dagger.Component
 import javax.inject.Singleton
@@ -43,16 +42,10 @@ interface FoldersFragmentComponent {
     fun inject(fragment: FoldersFragment)
 }
 
-@Component(modules = [MediaPlayerServiceModule::class])
+@Component(modules = [MediaPlayerServiceModule::class, AudioFocusModule::class, MediaSessionModule::class, NotificationModule::class, CompositeDisposableModule::class])
 @Singleton
 interface MediaPlayerServiceComponent {
     fun inject(to: MediaPlayerService)
-}
-
-@Component(modules = [MediaTerminalModule::class])
-@Singleton
-interface MediaTerminalComponent {
-    fun inject(to: MediaTerminal)
 }
 
 @Component(modules = [SongPlayerModule::class])

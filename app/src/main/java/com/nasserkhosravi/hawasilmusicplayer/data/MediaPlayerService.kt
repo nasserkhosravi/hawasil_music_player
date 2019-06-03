@@ -1,115 +1,212 @@
 package com.nasserkhosravi.hawasilmusicplayer.data
 
-import android.app.Service
 import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.os.Binder
-import android.os.IBinder
+import android.os.Bundle
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
+import android.text.TextUtils
+import androidx.media.MediaBrowserServiceCompat
+import androidx.media.session.MediaButtonReceiver
+import com.nasserkhosravi.appcomponent.AppContext
+import com.nasserkhosravi.hawasilmusicplayer.R
+import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusHelper
+import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusRequestCompat
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
-import com.nasserkhosravi.hawasilmusicplayer.di.DaggerMediaPlayerServiceComponent
-import com.nasserkhosravi.hawasilmusicplayer.di.MediaPlayerServiceModule
+import com.nasserkhosravi.hawasilmusicplayer.di.*
+import com.nasserkhosravi.hawasilmusicplayer.getMediaMetaData
+import io.reactivex.disposables.CompositeDisposable
 import java.io.IOException
 import javax.inject.Inject
 
-class MediaPlayerService : Service(), MediaPlayer.OnPreparedListener {
-    private val serviceBinder = LocalBinder()
+class MediaPlayerService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedListener,
+    AudioManager.OnAudioFocusChangeListener {
 
     @Inject
-    lateinit var mediaPlayer: MediaPlayer
+    @JvmField
+    var mediaPlayer: MediaPlayer? = null
+    @Inject
+    lateinit var stateBuilder: PlaybackStateCompat.Builder
     @Inject
     lateinit var progressPublisher: SuspendableObservable
     @Inject
     lateinit var audioNoisyReceiver: AudioNoisyReceiver
+    @Inject
+    lateinit var mediaSession: MediaSessionCompat
+    @set:Inject
+    lateinit var audioFocusHelper: AudioFocusHelper
+    @set:Inject
+    lateinit var audioFocusRequest: AudioFocusRequestCompat
+    @Inject
+    lateinit var mediaController: MediaControllerCompat
+    @Inject
+    lateinit var mediaControllerCallback: MediaControllerCallBack
+    @Inject
+    lateinit var disposables: CompositeDisposable
+
+    override fun onAudioFocusChange(focusChange: Int) {
+        manager.onAudioFocusChange(focusChange)
+    }
+
+    private lateinit var manager: QueueManager
 
     override fun onCreate() {
         super.onCreate()
         isActive = true
-        DaggerMediaPlayerServiceComponent.builder().mediaPlayerServiceModule(MediaPlayerServiceModule(this))
+        DaggerMediaPlayerServiceComponent.builder()
+            .mediaPlayerServiceModule(MediaPlayerServiceModule(this))
+            .audioFocusModule(AudioFocusModule(AppContext.get(), this))
+            .mediaSessionModule(MediaSessionModule(this, tag()))
+            .notificationModule(NotificationModule(this))
             .build()
             .inject(this)
-        mediaPlayer.setOnPreparedListener(this)
+        QueueManager.get().setArgs(this, audioFocusHelper, audioFocusRequest)
+        manager = QueueManager.get()
+        audioFocusHelper.requestAudioFocus(audioFocusRequest)
+
+        mediaPlayer!!.setOnPreparedListener(this)
         registerReceiver(audioNoisyReceiver, AudioNoisyReceiver.createIntentFilter())
+        mediaSession.setPlaybackState(stateBuilder.build())
+        sessionToken = mediaSession.sessionToken
+        mediaController.registerCallback(mediaControllerCallback)
+
+        val newSongPlayDisposable = QueueEvents.newSongPlay.subscribe {
+            mediaSession.setMetadata(manager.queue.selected!!.getMediaMetaData(this))
+            updateMediaSessionPlaybackState(stateBuilder, PlaybackStateCompat.STATE_PLAYING)
+        }
+        val queueCompletedDisposable = QueueEvents.queueCompleted.subscribe {
+            updateMediaSessionPlaybackState(stateBuilder, PlaybackStateCompat.STATE_PAUSED)
+        }
+
+        val songStatusDisposable = QueueEvents.songStatus.subscribe {
+            mediaSession.setMetadata(manager.queue.selected!!.getMediaMetaData(this))
+            if (it.isPlay()) {
+                updateMediaSessionPlaybackState(stateBuilder, PlaybackStateCompat.STATE_PLAYING)
+            } else {
+                updateMediaSessionPlaybackState(stateBuilder, PlaybackStateCompat.STATE_PAUSED)
+            }
+        }
+        disposables.add(songStatusDisposable)
+        disposables.add(newSongPlayDisposable)
+        disposables.add(queueCompletedDisposable)
+
+    }
+
+    override fun onGetRoot(clientPackageName: String, clientUid: Int, rootHints: Bundle?): BrowserRoot? {
+        if (TextUtils.equals(clientPackageName, packageName)) {
+            return BrowserRoot(getString(R.string.app_name), null)
+        }
+        return null
+    }
+
+    override fun onLoadChildren(parentId: String, result: Result<MutableList<MediaBrowserCompat.MediaItem>>) {
+        result.sendResult(null)
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MediaButtonReceiver.handleIntent(mediaSession, intent)
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
         playFromLastPosition()
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return serviceBinder
-    }
-
     fun playFromLastPosition() {
-        if (!mediaPlayer.isPlaying) {
+        if (!mediaPlayer?.isPlaying!!) {
             //todo:song passed dependency, remove it
-            mediaPlayer.seekTo(MediaTerminal.queue.selected!!.passedDuration.toInt())
-            mediaPlayer.start()
+            mediaPlayer!!.seekTo(manager.queue.selected!!.passedDuration.toInt())
+            mediaPlayer!!.start()
             progressPublisher.resume()
         }
     }
 
     fun pause() {
-        mediaPlayer.pause()
+        mediaPlayer?.pause()
         progressPublisher.pause()
     }
 
     fun resetMediaPlayer() {
-        mediaPlayer.stop()
-        mediaPlayer.reset()
+        mediaPlayer?.stop()
+        mediaPlayer?.reset()
     }
 
     fun prepareSongAndPlay(path: String) {
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+        mediaPlayer!!.setAudioStreamType(AudioManager.STREAM_MUSIC)
         try {
-            mediaPlayer.setDataSource(path)
+            mediaPlayer!!.setDataSource(path)
         } catch (e: IOException) {
             e.printStackTrace()
             stopSelf()
         }
-        mediaPlayer.prepareAsync()
-    }
-
-    fun seekTo(progress: Int) {
-        mediaPlayer.seekTo(progress)
+        mediaPlayer!!.prepareAsync()
     }
 
     fun getCurrentPosition(): Int {
-        return mediaPlayer.currentPosition
-    }
-
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        //if user or system want kill app then force pause song
-        MediaTerminal.queue.selected!!.status = SongStatus.PAUSE
-        UserPref.saveQueueData(MediaTerminal.queue)
-        release()
-        super.onTaskRemoved(rootIntent)
+        if (mediaPlayer != null) {
+            return mediaPlayer!!.currentPosition
+        }
+        return 0
     }
 
     fun computePassedDuration(): Float {
-        val duration = mediaPlayer.duration.toFloat()
-        val current = mediaPlayer.currentPosition.toFloat()
-        return (current / duration)
+        if (mediaPlayer != null) {
+            val duration = mediaPlayer!!.duration.toFloat()
+            val current = mediaPlayer!!.currentPosition.toFloat()
+            return (current / duration)
+        }
+        return 0f
     }
 
-    fun isReadyToComputePassedDuration(): Boolean {
-        return mediaPlayer.currentPosition > 0
+    /**
+     * User removed task from task list
+     */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        releaseResource()
+        super.onTaskRemoved(rootIntent)
     }
 
-    fun release() {
-        mediaPlayer.release()
-    }
-
-
+    /**
+     * OS killed task
+     */
     override fun onDestroy() {
         super.onDestroy()
+        releaseResource()
+    }
+
+    private fun releaseResource() {
+        disposables.clear()
+        mediaSession.setCallback(null)
+        mediaController.unregisterCallback(mediaControllerCallback)
+        mediaControllerCallback.removeNowPlayingNotification()
+        saveCurrentSong()
+        mediaPlayer!!.release()
+
+        QueueManager.get().finishObserver?.dispose()
         unregisterReceiver(audioNoisyReceiver)
         isActive = false
     }
 
-    inner class LocalBinder : Binder() {
-        val service: MediaPlayerService
-            get() = this@MediaPlayerService
+    private fun saveCurrentSong() {
+        //if user or system want kill app then force pause song
+        manager.queue.selected!!.status = SongStatus.PAUSE
+        UserPref.saveQueueData(manager.queue)
+    }
+
+    private fun updateMediaSessionPlaybackState(stateBuilder: PlaybackStateCompat.Builder, state: Int) {
+        fun createPlayBackAction(state: Int): Long {
+            return if (state == PlaybackStateCompat.STATE_PLAYING) {
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_PAUSE
+            } else {
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_PLAY
+            }
+        }
+        stateBuilder.setActions(createPlayBackAction(state))
+        stateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0f)
+        mediaSession.setPlaybackState(stateBuilder.build())
     }
 
     companion object {
