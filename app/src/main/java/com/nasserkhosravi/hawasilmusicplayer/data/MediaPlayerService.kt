@@ -13,6 +13,7 @@ import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import com.nasserkhosravi.appcomponent.AppContext
 import com.nasserkhosravi.hawasilmusicplayer.R
+import com.nasserkhosravi.hawasilmusicplayer.app.App
 import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusHelper
 import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusRequestCompat
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
@@ -74,7 +75,7 @@ class MediaPlayerService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedLi
         mediaController.registerCallback(mediaControllerCallback)
 
         val newSongPlayDisposable = QueueEvents.newSongPlay.subscribe {
-            mediaSession.setMetadata(manager.queue.selected!!.getMediaMetaData(this))
+            mediaSession.setMetadata(manager.queue!!.selected!!.getMediaMetaData(this))
             updateMediaSessionPlaybackState(stateBuilder, PlaybackStateCompat.STATE_PLAYING)
         }
         val queueCompletedDisposable = QueueEvents.queueCompleted.subscribe {
@@ -82,7 +83,7 @@ class MediaPlayerService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedLi
         }
 
         val songStatusDisposable = QueueEvents.songStatus.subscribe {
-            mediaSession.setMetadata(manager.queue.selected!!.getMediaMetaData(this))
+            mediaSession.setMetadata(manager.queue!!.selected!!.getMediaMetaData(this))
             if (it.isPlay()) {
                 updateMediaSessionPlaybackState(stateBuilder, PlaybackStateCompat.STATE_PLAYING)
             } else {
@@ -118,7 +119,7 @@ class MediaPlayerService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedLi
     fun playFromLastPosition() {
         if (!mediaPlayer?.isPlaying!!) {
             //todo:song passed dependency, remove it
-            mediaPlayer!!.seekTo(manager.queue.selected!!.passedDuration.toInt())
+            mediaPlayer!!.seekTo(manager.queue!!.selected!!.passedDuration.toInt())
             mediaPlayer!!.start()
             progressPublisher.resume()
         }
@@ -163,14 +164,15 @@ class MediaPlayerService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedLi
 
     /**
      * User removed task from task list
+     * so stop service and onDestroy will be called
      */
     override fun onTaskRemoved(rootIntent: Intent?) {
-        releaseResource()
+        stopSelf()
         super.onTaskRemoved(rootIntent)
     }
 
     /**
-     * OS killed task
+     * Service terminated
      */
     override fun onDestroy() {
         super.onDestroy()
@@ -182,7 +184,9 @@ class MediaPlayerService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedLi
         mediaSession.setCallback(null)
         mediaController.unregisterCallback(mediaControllerCallback)
         mediaControllerCallback.removeNowPlayingNotification()
-        saveCurrentSong()
+        if (App.get().isNormalIntent) {
+            saveCurrentSong()
+        }
         mediaPlayer!!.release()
 
         QueueManager.get().finishObserver?.dispose()
@@ -192,16 +196,18 @@ class MediaPlayerService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedLi
 
     private fun saveCurrentSong() {
         //if user or system want kill app then force pause song
-        manager.queue.selected!!.status = SongStatus.PAUSE
-        UserPref.saveQueueData(manager.queue)
+        manager.queue?.selected?.let { song ->
+            song.status = SongStatus.PAUSE
+            UserPref.saveQueueData(manager.queue!!)
+        }
     }
 
     private fun updateMediaSessionPlaybackState(stateBuilder: PlaybackStateCompat.Builder, state: Int) {
         fun createPlayBackAction(state: Int): Long {
             return if (state == PlaybackStateCompat.STATE_PLAYING) {
-                PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_PAUSE
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_SKIP_TO_NEXT or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
             } else {
-                PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_PLAY
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_SKIP_TO_NEXT or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
             }
         }
         stateBuilder.setActions(createPlayBackAction(state))

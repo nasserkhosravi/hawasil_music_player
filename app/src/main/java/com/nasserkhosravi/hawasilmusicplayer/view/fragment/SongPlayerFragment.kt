@@ -21,6 +21,7 @@ import com.nasserkhosravi.appcomponent.utils.UIUtils
 import com.nasserkhosravi.hawasilmusicplayer.FormatUtils
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.app.setOnClickListeners
+import com.nasserkhosravi.hawasilmusicplayer.data.UIMediaCommand
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.di.DaggerSongPlayerFragmentComponent
 import com.nasserkhosravi.hawasilmusicplayer.di.SongPlayerModule
@@ -46,14 +47,7 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
         DaggerSongPlayerFragmentComponent.builder().songPlayerModule(SongPlayerModule(this)).build().inject(this)
 //        seek bar has un wanted padding and we don't want it's padding
         skbTimeline.setPadding(0, 0, 0, 0)
-
         viewModel = ViewModelProviders.of(this).get(SongPlayerViewModel::class.java)
-        viewModel.getRepeat.observe(this, Observer {
-            refreshImgRepeat(it)
-        })
-        val shuffleModeDisposable = viewModel.getShuffleEvent().subscribe {
-            refreshImgShuffle(it)
-        }
         val progressObserver = viewModel.getSongChangeEvent().subscribe {
             refreshTimeInfo(it)
         }
@@ -61,9 +55,6 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
             refreshImgFavorite(it)
         })
 
-        val newSongPlayObserver = viewModel.getNewSongEvent().subscribe {
-            setSongInfoInView(it!!)
-        }
         val songStatusObserver = viewModel.getSongStatusEvent().subscribe {
             refreshStatusView(it.isPlay())
         }
@@ -71,15 +62,31 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
             refreshStatusView(false)
             refreshTimeInfo(0)
         }
-        compositeDisposable.add(shuffleModeDisposable)
         compositeDisposable.add(progressObserver)
-        compositeDisposable.add(newSongPlayObserver)
         compositeDisposable.add(songStatusObserver)
         compositeDisposable.add(songCompletedObserver)
+        if (arguments!!.getBoolean("fromInternal")) {
+            viewModel.getRepeat.observe(this, Observer {
+                refreshImgRepeat(it)
+            })
+            val shuffleModeDisposable = viewModel.getShuffleEvent().subscribe {
+                refreshImgShuffle(it)
+            }
+            val newSongPlayObserver = viewModel.getNewSongEvent().subscribe {
+                setSongInfoInView(it!!)
+            }
+            compositeDisposable.add(shuffleModeDisposable)
+            compositeDisposable.add(newSongPlayObserver)
+            refreshImgShuffle(viewModel.getShuffle.value!!)
+        } else {
+            imgShuffle.visibility = View.GONE
+            imgRepeat.visibility = View.GONE
+            UIMediaCommand.resume()
+        }
+        UIUtils.filterColor(imgFavorite, R.color.favorite)
 
         val model = viewModel.getCurrentSong()
         setSongInfoInView(model)
-        UIUtils.filterColor(imgFavorite, R.color.favorite)
         setOnClickListeners(this, imgPlayStatus, imgFavorite, imgUp, imgPrevious, imgNext, imgShuffle, imgRepeat)
 
         seekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
@@ -93,7 +100,6 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         }
         skbTimeline.setOnSeekBarChangeListener(seekBarChangeListener)
-        refreshImgShuffle(viewModel.getShuffle.value!!)
     }
 
     private fun setSongInfoInView(model: SongModel) {
@@ -212,8 +218,12 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
     }
 
     companion object {
-        fun newInstance(): SongPlayerFragment {
-            return SongPlayerFragment()
+        fun newInstance(fromInternal: Boolean = true): SongPlayerFragment {
+            return SongPlayerFragment().apply {
+                val bundle = Bundle()
+                bundle.putBoolean("fromInternal", fromInternal)
+                arguments = bundle
+            }
         }
 
         fun tag(): String {

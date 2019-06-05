@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose
 import com.nasserkhosravi.hawasilmusicplayer.app.App
 
 class QueueModel {
-    var isSongRestored = false
+    var shouldLoad = false
 
     @Expose
     var selected: SongModel? = null
@@ -65,13 +65,8 @@ class QueueModel {
         }
     }
 
-    fun toggleShuffle() {
-        isShuffled = !isShuffled
-        setShuffle(isShuffled)
-    }
-
-    fun toggleRepeat() {
-        isEnableRepeat = !isEnableRepeat
+    fun setRepeat(isEnable: Boolean) {
+        isEnableRepeat = isEnable
     }
 
     fun setShuffle(isEnable: Boolean) {
@@ -92,7 +87,7 @@ class QueueModel {
     }
 
     fun reset() {
-        isSongRestored = false
+        shouldLoad = false
         items.clear()
         selectedIndex = -1
         queueId = ""
@@ -102,7 +97,7 @@ class QueueModel {
     }
 
     override fun hashCode(): Int {
-        var result = isSongRestored.hashCode()
+        var result = shouldLoad.hashCode()
         result = 31 * result + (selected?.hashCode() ?: 0)
         result = 31 * result + items.hashCode()
         result = 31 * result + selectedIndex
@@ -118,7 +113,7 @@ class QueueModel {
 
         other as QueueModel
 
-        if (isSongRestored != other.isSongRestored) return false
+        if (shouldLoad != other.shouldLoad) return false
         if (selected != other.selected) return false
         if (items != other.items) return false
         if (selectedIndex != other.selectedIndex) return false

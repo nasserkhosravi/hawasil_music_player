@@ -40,7 +40,7 @@ class QueueAdapter : BaseComponentAdapter<SongModel>() {
 
         Glide.with(vh.imgThumb).load(art).apply(RequestOptions.circleCropTransform()).into(vh.imgThumb)
         val shadowLayout = vh.itemView as ShadowLayout
-        val selectedSong = QueueManager.get().queue.selected
+        val selectedSong = QueueManager.get().queue?.selected
         if (selectedSong != null && model.id == selectedSong.id) {
             selectedPosition = position
             shadowLayout.shadowColor = getColorRes(R.color.enabled_item)
@@ -62,7 +62,6 @@ class QueueAdapter : BaseComponentAdapter<SongModel>() {
             getDefaultArt(ctx)
         }
     }
-
 
     private fun getDefaultArt(context: Context): Bitmap {
         if (defaultArt == null) {

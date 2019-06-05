@@ -2,12 +2,11 @@ package com.nasserkhosravi.hawasilmusicplayer.viewmodel
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.provider.MediaStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nasserkhosravi.hawasilmusicplayer.R
+import com.nasserkhosravi.hawasilmusicplayer.app.App
 import com.nasserkhosravi.hawasilmusicplayer.data.FavoriteManager
 import com.nasserkhosravi.hawasilmusicplayer.data.QueueEvents
 import com.nasserkhosravi.hawasilmusicplayer.data.QueueManager
@@ -23,7 +22,7 @@ class SongPlayerViewModel : ViewModel() {
     private var favorite = MutableLiveData<Boolean>()
 
     init {
-        val data = QueueManager.get().queue
+        val data = QueueManager.get().queue!!
         repeat.value = data.isEnableRepeat
         shuffle.value = data.isShuffled
         favorite.value = FavoriteManager.isFavorite(data.selected!!.id)
@@ -80,10 +79,10 @@ class SongPlayerViewModel : ViewModel() {
             try {
                 MediaStore.Images.Media.getBitmap(context.contentResolver, model.artUri!!)
             } catch (e: FileNotFoundException) {
-                getDefaultArt(context)
+                App.get().defaultArt
             }
         } else {
-            getDefaultArt(context)
+            App.get().defaultArt
         }
     }
 
@@ -99,15 +98,8 @@ class SongPlayerViewModel : ViewModel() {
         }
     }
 
-    private fun getDefaultArt(context: Context): Bitmap {
-        if (defaultArt == null) {
-            defaultArt = BitmapFactory.decodeResource(context.resources, R.drawable.art_default)
-        }
-        return defaultArt!!
-    }
-
     fun getCurrentSong(): SongModel {
-        return QueueManager.get().queue.selected!!
+        return QueueManager.get().queue!!.selected!!
     }
 
 }

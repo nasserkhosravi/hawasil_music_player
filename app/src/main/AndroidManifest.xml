@@ -17,18 +17,31 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:allowBackup">
 
-        <activity android:name=".view.activity.IntroActivity">
+        <activity android:name=".view.activity.PaletteActivity" />
+        <activity
+            android:name=".view.activity.MainActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
 
-        <activity android:name=".view.activity.PaletteActivity" />
-        <activity
-            android:name=".view.activity.MainActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan" />
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.OPENABLE" />
+
+                <data android:scheme="content" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/ogg" />
+                <data android:mimeType="application/x-ogg" />
+                <data android:mimeType="application/itunes" />
+            </intent-filter>
+        </activity>
 
         <service android:name=".data.MediaPlayerService">
             <intent-filter>
@@ -43,40 +56,4 @@
         </receiver>
 
     </application>
-
-    <!--<intent-filter>-->
-    <!--<action android:name="android.intent.action.VIEW" />-->
-    <!--<category android:name="android.intent.category.DEFAULT" />-->
-
-    <!--<data android:scheme="file" />-->
-    <!--<data android:mimeType="audio/*" />-->
-    <!--<data android:mimeType="application/ogg" />-->
-    <!--<data android:mimeType="application/x-ogg" />-->
-    <!--<data android:mimeType="application/itunes" />-->
-    <!--</intent-filter>-->
-    <!--<intent-filter>-->
-    <!--<action android:name="android.intent.action.VIEW" />-->
-
-    <!--<category android:name="android.intent.category.DEFAULT" />-->
-    <!--<category android:name="android.intent.category.BROWSABLE" />-->
-
-    <!--<data android:scheme="http" />-->
-    <!--<data android:mimeType="audio/*" />-->
-    <!--<data android:mimeType="application/ogg" />-->
-    <!--<data android:mimeType="application/x-ogg" />-->
-    <!--<data android:mimeType="application/itunes" />-->
-    <!--</intent-filter>-->
-    <!--<intent-filter android:priority="-1">-->
-    <!--<action android:name="android.intent.action.VIEW" />-->
-
-    <!--<category android:name="android.intent.category.DEFAULT" />-->
-    <!--<category android:name="android.intent.category.BROWSABLE" />-->
-
-    <!--<data android:scheme="content" />-->
-    <!--<data android:mimeType="audio/*" />-->
-    <!--<data android:mimeType="application/ogg" />-->
-    <!--<data android:mimeType="application/x-ogg" />-->
-    <!--<data android:mimeType="application/itunes" />-->
-    <!--</intent-filter>-->
-
 </manifest>

@@ -56,7 +56,7 @@ object DataFakeFactory {
 
     fun getQueueData(): QueueModel {
         val data = QueueModel()
-        data.isSongRestored = true
+        data.shouldLoad = true
         return data
     }
 }

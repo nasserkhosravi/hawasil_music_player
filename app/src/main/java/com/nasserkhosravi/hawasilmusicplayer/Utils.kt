@@ -7,7 +7,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
@@ -19,10 +19,13 @@ import androidx.annotation.DimenRes
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.loader.content.CursorLoader
 import androidx.media.session.MediaButtonReceiver
 import com.nasserkhosravi.appcomponent.AppContext
+import com.nasserkhosravi.hawasilmusicplayer.app.App
 import com.nasserkhosravi.hawasilmusicplayer.data.NOW_PLAYING_CHANNEL
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
+import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -249,16 +252,34 @@ class TimeMeasure {
     }
 }
 
+object StorageUtils {
+
+    fun getRealPathFromURI(context: Context, contentUri: Uri): String {
+        val projection = arrayOf(MediaStore.Audio.Media.DATA)
+        val loader = CursorLoader(context, contentUri, projection, null, null, null)
+        val cursor = loader.loadInBackground()
+        val columnIndex = cursor!!.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+        cursor.moveToFirst()
+        val result = cursor.getString(columnIndex)
+        cursor.close()
+        return result
+    }
+
+}
+
 fun SongModel.getMediaMetaData(context: Context): MediaMetadataCompat {
-    val metadataBuilder = MediaMetadataCompat.Builder()
-        .putBitmap(
-            MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
-            BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
-        )
-        .putBitmap(
-            MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
-            MediaStore.Images.Media.getBitmap(context.contentResolver, artUri)
-        )
+    val bitmap = if (artUri != null) {
+        try {
+            MediaStore.Images.Media.getBitmap(context.contentResolver, artUri!!)
+        } catch (e: FileNotFoundException) {
+            App.get().defaultArt
+        }
+    } else {
+        App.get().defaultArt
+    }
+    val metadataBuilder =
+        MediaMetadataCompat.Builder().putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, App.get().appIcon)
+            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
     metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
     metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
     return metadataBuilder.build()!!

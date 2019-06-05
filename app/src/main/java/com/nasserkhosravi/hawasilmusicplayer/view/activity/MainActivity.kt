@@ -2,6 +2,7 @@ package com.nasserkhosravi.hawasilmusicplayer.view.activity
 
 import android.app.ActivityManager
 import android.content.ComponentName
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
@@ -13,19 +14,20 @@ import com.nasserkhosravi.appcomponent.ResHelper
 import com.nasserkhosravi.appcomponent.view.BaseComponentActivity
 import com.nasserkhosravi.hawasilmusicplayer.PermissionUtils
 import com.nasserkhosravi.hawasilmusicplayer.R
-import com.nasserkhosravi.hawasilmusicplayer.data.MediaPlayerService
-import com.nasserkhosravi.hawasilmusicplayer.data.QueueManager
-import com.nasserkhosravi.hawasilmusicplayer.data.UIMediaCommand
-import com.nasserkhosravi.hawasilmusicplayer.data.UserPref
+import com.nasserkhosravi.hawasilmusicplayer.StorageUtils
+import com.nasserkhosravi.hawasilmusicplayer.app.App
+import com.nasserkhosravi.hawasilmusicplayer.data.*
+import com.nasserkhosravi.hawasilmusicplayer.data.model.QueueModel
 import com.nasserkhosravi.hawasilmusicplayer.view.fragment.*
 import com.nasserkhosravi.hawasilmusicplayer.view.fragment.component.FragmentLifecycleListener
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNavigationChangeListener {
 
-    var playerFragment: SongPlayerFragment? = null
-
-    private lateinit var mediaBrowser: MediaBrowserCompat
+    private var playerFragment: SongPlayerFragment? = null
+    private val mediaBrowser: MediaBrowserCompat by lazy {
+        MediaBrowserCompat(this, ComponentName(this, MediaPlayerService::class.java), connectionCallback, null)
+    }
     private val connectionCallback = object : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
             super.onConnected()
@@ -33,6 +35,9 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
                 val myMediaController = MediaControllerCompat(this@MainActivity, token)
                 MediaControllerCompat.setMediaController(this@MainActivity, myMediaController)
                 UIMediaCommand.setController(myMediaController)
+            }
+            if (!isNormalIntent()) {
+                runOnlyPlayerFlow()
             }
         }
     }
@@ -49,12 +54,44 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
                 )
             )
         }
+        if (isNormalIntent()) {
+            runNormalFlow()
+        } else {
+            App.get().isNormalIntent = false
+        }
+        mediaBrowser.connect()
+    }
+
+    private fun runOnlyPlayerFlow() {
+        val data = intent.data!!
+        val path = StorageUtils.getRealPathFromURI(this, data)
+        val song = MediaProvider.getSongByPath(path)!!
+        QueueManager.get().queue = QueueModel().apply {
+            items.add(song)
+            active(0)
+            shouldLoad = true
+        }
+        flPlayer!!.visibility = View.VISIBLE
+        layoutBody!!.visibility = View.GONE
+        playerFragment = SongPlayerFragment.newInstance(false)
+        supportFragmentManager.beginTransaction().replace(R.id.flPlayer, playerFragment!!).commit()
+    }
+
+    /**
+     * true if activity has no input data (app started from app icon)
+     * else false (app started from either source)
+     */
+    private fun isNormalIntent() = intent.action == Intent.ACTION_MAIN
+
+    private fun runNormalFlow() {
         if (UserPref.hasQueue()) {
             val queueData = UserPref.retrieveQueueData()
             if (queueData != null) {
                 QueueManager.get().queue = (queueData)
             }
-            QueueManager.get().queue.isSongRestored = true
+            QueueManager.get().queue!!.shouldLoad = true
+        } else {
+            QueueManager.get().queue = QueueModel()
         }
 
         PermissionUtils.requestWritePermission(this)
@@ -71,12 +108,6 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
             .replace(R.id.flNavigation, navigationFragment)
             .commit()
         flMiniPlayer.setOnClickListener(this)
-        initMediaBrowser()
-    }
-
-    private fun initMediaBrowser() {
-        mediaBrowser = MediaBrowserCompat(this, ComponentName(this, MediaPlayerService::class.java), connectionCallback, null)
-        mediaBrowser.connect()
     }
 
     override fun onClick(v: View) {
@@ -108,9 +139,13 @@ class MainActivity : BaseComponentActivity(), View.OnClickListener, BubbleNaviga
 
     override fun onDestroy() {
         super.onDestroy()
-        UserPref.saveQueueData(QueueManager.get().queue)
-        flMiniPlayer.setOnClickListener(null)
-        UIMediaCommand.setController(null)
+        if (App.get().isNormalIntent) {
+            QueueManager.get().queue?.let {
+                UserPref.saveQueueData(it)
+            }
+            flMiniPlayer.setOnClickListener(null)
+            UIMediaCommand.setController(null)
+        }
         mediaBrowser.disconnect()
     }
 

@@ -13,7 +13,7 @@ import io.reactivex.disposables.Disposable
 
 class QueueManager private constructor() {
     var finishObserver: Disposable? = null
-    lateinit var queue: QueueModel
+    var queue: QueueModel? = null
     private lateinit var playerService: MediaPlayerService
     private lateinit var audioFocusHelper: AudioFocusHelper
     private lateinit var audioFocusRequest: AudioFocusRequestCompat
@@ -47,14 +47,14 @@ class QueueManager private constructor() {
     }
 
     fun processRequest(items: List<SongModel>, position: Int, queueId: String): Int {
-        if (queue.isNewQueue(queueId)) {
-            queue.reset()
-            queue.items.addAll(items)
-            queue.queueId = queueId
+        if (queue!!.isNewQueue(queueId)) {
+            queue!!.reset()
+            queue!!.items.addAll(items)
+            queue!!.queueId = queueId
             resetReplacePlayPublish(position)
             return 1
         } else {
-            if (queue.isNewSong(items[position].id)) {
+            if (queue!!.isNewSong(items[position].id)) {
                 finishObserver?.dispose()
                 resetReplacePlayPublish(position)
                 return 0
@@ -64,29 +64,29 @@ class QueueManager private constructor() {
     }
 
     fun playNext() {
-        if (queue.isOnLastItem()) {
+        if (queue!!.isOnLastItem()) {
             resetReplacePlayPublish(0)
         } else {
-            resetReplacePlayPublish(queue.selectedIndex + 1)
+            resetReplacePlayPublish(queue!!.selectedIndex + 1)
         }
     }
 
     fun playPrevious() {
-        if (queue.isOnFirstItem()) {
-            resetReplacePlayPublish(queue.items.lastIndex)
+        if (queue!!.isOnFirstItem()) {
+            resetReplacePlayPublish(queue!!.items.lastIndex)
         } else {
-            resetReplacePlayPublish(queue.selectedIndex - 1)
+            resetReplacePlayPublish(queue!!.selectedIndex - 1)
         }
     }
 
     fun resume(): Boolean {
         if (audioFocusHelper.requestAudioFocus(audioFocusRequest)) {
             registerFinishListener()
-            queue.selected!!.status = SongStatus.PLAYING
-            if (queue.isSongRestored) {
+            queue!!.selected!!.status = SongStatus.PLAYING
+            if (queue!!.shouldLoad) {
                 playerService.resetMediaPlayer()
-                playerService.prepareSongAndPlay(queue.selected!!.path)
-                queue.isSongRestored = false
+                playerService.prepareSongAndPlay(queue!!.selected!!.path)
+                queue!!.shouldLoad = false
             } else {
                 playerService.playFromLastPosition()
             }
@@ -99,63 +99,47 @@ class QueueManager private constructor() {
     fun pause() {
         finishObserver?.dispose()
         playerService.pause()
-        queue.selected?.status = SongStatus.PAUSE
+        queue?.selected?.status = SongStatus.PAUSE
         QueueEvents.songStatus.onNext(SongStatus.PAUSE)
     }
 
-    fun toggleRepeat() {
-        queue.toggleRepeat()
-    }
-
     fun setRepeatMode(isEnable: Boolean) {
-        if (queue.isEnableRepeat != isEnable) {
-            toggleRepeat()
-        }
-    }
-
-    fun togglePlay() {
-        if (queue.selected!!.isPlaying()) {
-            pause()
-        } else {
-            resume()
+        if (queue!!.isEnableRepeat != isEnable) {
+            queue!!.setRepeat(isEnable)
         }
     }
 
     fun setShuffle(isEnable: Boolean) {
-        if (queue.isShuffled != isEnable) {
-            toggleShuffle()
+        if (queue!!.isShuffled != isEnable) {
+            queue!!.setShuffle(isEnable)
+            QueueEvents.shuffleMode.onNext(queue!!.isShuffled)
         }
-    }
-
-    fun toggleShuffle() {
-        queue.toggleShuffle()
-        QueueEvents.shuffleMode.onNext(queue.isShuffled)
     }
 
     fun seekTo(progress: Long) {
         playerService.mediaPlayer!!.seekTo(progress.toInt())
-        queue.selected!!.passedDuration = progress
+        queue!!.selected!!.passedDuration = progress
     }
 
     private fun resetReplacePlayPublish(position: Int) {
-        if (queue.selectedIndex > -1) {
-            queue.deActiveSelected()
+        if (queue!!.selectedIndex > -1) {
+            queue!!.deActiveSelected()
         }
-        queue.active(position)
+        queue!!.active(position)
         playSelectedSong()
-        QueueEvents.newSongPlay.onNext(queue.selected!!)
+        QueueEvents.newSongPlay.onNext(queue!!.selected!!)
         registerFinishListener()
     }
 
     private fun playSelectedSong() {
         playerService.resetMediaPlayer()
-        playerService.prepareSongAndPlay(queue.selected!!.path)
+        playerService.prepareSongAndPlay(queue!!.selected!!.path)
     }
 
     private fun registerFinishListener() {
         finishObserver = playerService.progressPublisher.observable.subscribe({
-            queue.selected!!.passedDuration = playerService.getCurrentPosition().toLong()
-            QueueEvents.songPassed.onNext(queue.selected!!.passedDuration)
+            queue!!.selected!!.passedDuration = playerService.getCurrentPosition().toLong()
+            QueueEvents.songPassed.onNext(queue!!.selected!!.passedDuration)
             if (isCompletedCurrent()) {
                 onSongCompletedEvent()
                 finishObserver?.dispose()
@@ -166,12 +150,12 @@ class QueueManager private constructor() {
     }
 
     private fun onSongCompletedEvent() {
-        queue.selected?.resetToPassiveState()
+        queue!!.selected?.resetToPassiveState()
         QueueEvents.songComplete.onNext(Any())
-        if (queue.hasNextItem()) {
+        if (queue!!.hasNextItem()) {
             playNext()
         } else {
-            if (queue.shouldStartFromFirst()) {
+            if (queue!!.shouldStartFromFirst()) {
                 resetReplacePlayPublish(0)
             } else {
                 QueueEvents.queueCompleted.onNext(Any())
@@ -180,7 +164,7 @@ class QueueManager private constructor() {
     }
 
     private fun isCompletedCurrent(): Boolean {
-        return FormatUtils.toSecond(playerService.getCurrentPosition().toLong()) == FormatUtils.toSecond(queue.selected!!.duration)
+        return FormatUtils.toSecond(playerService.getCurrentPosition().toLong()) == FormatUtils.toSecond(queue!!.selected!!.duration)
     }
 
     companion object {

@@ -154,11 +154,11 @@ class QueueModelTest {
         assertFalse(queue.isShuffled)
         assertEquals(queue.items, orderItems)
 
-        queue.toggleShuffle()
+        queue.setShuffle(true)
         assertTrue(queue.isShuffled)
         assertNotEquals(queue.items, orderItems)
 
-        queue.toggleShuffle()
+        queue.setShuffle(false)
         assertFalse(queue.isShuffled)
         assertEquals(queue.items, orderItems)
     }
@@ -167,9 +167,9 @@ class QueueModelTest {
     fun toggleRepeat() {
         val queue = QueueModel()
         assertFalse(queue.isEnableRepeat)
-        queue.toggleRepeat()
+        queue.setRepeat(true)
         assertTrue(queue.isEnableRepeat)
-        queue.toggleRepeat()
+        queue.setRepeat(false)
         assertFalse(queue.isEnableRepeat)
     }
 
@@ -197,10 +197,10 @@ class QueueModelTest {
         val queue = QueueModel()
         with(queue) {
             queueId = "someGeneratedId"
-            isSongRestored = true
+            shouldLoad = true
             selectedIndex = 20
             toggleShuffle()
-            toggleRepeat()
+            setRepeat(true)
             val song = mock(SongModel::class.java)
             items.add(song)
             active(0)

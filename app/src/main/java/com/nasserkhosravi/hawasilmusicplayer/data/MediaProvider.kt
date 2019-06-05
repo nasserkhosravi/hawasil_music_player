@@ -301,6 +301,18 @@ object MediaProvider {
         return result
     }
 
+    fun getSongByPath(path: String): SongModel? {
+        val columns = getAudioColumns()
+        val selection = Media.DATA + " = ? "
+        val args = arrayOf(path)
+        val cursor = contentResolver.query(Media.EXTERNAL_CONTENT_URI, columns, selection, args, null)
+        return if (cursor.moveToFirst()) {
+            createSongByCursor(cursor)
+        } else {
+            null
+        }
+    }
+
     private fun getAudioColumns(): Array<String> {
         return arrayOf(Media._ID, Media.DATA, Media.ALBUM_ID, Media.ALBUM, Media.ARTIST, Media.DISPLAY_NAME, Media.DURATION)
     }

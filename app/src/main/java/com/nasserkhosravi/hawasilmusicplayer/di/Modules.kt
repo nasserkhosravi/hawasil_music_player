@@ -113,11 +113,13 @@ class MediaSessionModule(
                 isActive = true
                 setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
                 setCallback(mediaSessionCallBack)
-                if (QueueManager.get().queue.isShuffled) {
-                    setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL)
-                }
-                if (QueueManager.get().queue.isEnableRepeat) {
-                    setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL)
+                QueueManager.get().queue?.let {
+                    if (it.isShuffled) {
+                        setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL)
+                    }
+                    if (it.isEnableRepeat) {
+                        setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL)
+                    }
                 }
             }
     }

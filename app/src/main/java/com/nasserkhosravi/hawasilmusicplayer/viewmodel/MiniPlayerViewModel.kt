@@ -21,6 +21,6 @@ class MiniPlayerViewModel(app: Application) : AndroidViewModel(app) {
 
     fun hasQueue() = UserPref.hasQueue()
 
-    fun getCurrentSong() = QueueManager.get().queue.selected
+    fun getCurrentSong() = QueueManager.get().queue?.selected
 
 }
