@@ -1,6 +1,5 @@
 package com.nasserkhosravi.hawasilmusicplayer.di
 
-import android.app.Application
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -11,6 +10,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media.AudioAttributesCompat
+import androidx.room.Room
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.nasserkhosravi.appcomponent.view.adapter.BaseComponentAdapter
@@ -20,6 +20,7 @@ import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusHelper
 import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusRequestCompat
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModelAdapter
+import com.nasserkhosravi.hawasilmusicplayer.data.persist.MusicPlayerDatabase
 import com.nasserkhosravi.hawasilmusicplayer.view.adapter.RecycleItemListener
 import dagger.Module
 import dagger.Provides
@@ -29,13 +30,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
-class AppModule {
-
-    @Provides
-    @Singleton
-    fun provideContext(application: Application): Context {
-        return application
-    }
+class AppModule(private val context: Context) {
 
     @Singleton
     @Provides
@@ -48,6 +43,14 @@ class AppModule {
             .setPrettyPrinting()
             .create()
     }
+
+    @Singleton
+    @Provides
+    fun provideDatabase(): MusicPlayerDatabase {
+        return Room.databaseBuilder(context, MusicPlayerDatabase::class.java, "MusicPlayerDataBase")
+            .fallbackToDestructiveMigration().build()
+    }
+
 }
 
 @Module

@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import com.nasserkhosravi.hawasilmusicplayer.data.QueueEvents
 import com.nasserkhosravi.hawasilmusicplayer.data.QueueManager
 import com.nasserkhosravi.hawasilmusicplayer.data.UIMediaCommand
-import com.nasserkhosravi.hawasilmusicplayer.data.UserPref
+import com.nasserkhosravi.hawasilmusicplayer.data.persist.UserPref
 
 class MiniPlayerViewModel(app: Application) : AndroidViewModel(app) {
 

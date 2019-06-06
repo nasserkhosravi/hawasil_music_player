@@ -16,8 +16,12 @@ import com.nasserkhosravi.hawasilmusicplayer.PermissionUtils
 import com.nasserkhosravi.hawasilmusicplayer.R
 import com.nasserkhosravi.hawasilmusicplayer.StorageUtils
 import com.nasserkhosravi.hawasilmusicplayer.app.App
-import com.nasserkhosravi.hawasilmusicplayer.data.*
+import com.nasserkhosravi.hawasilmusicplayer.data.MediaPlayerService
+import com.nasserkhosravi.hawasilmusicplayer.data.MediaProvider
+import com.nasserkhosravi.hawasilmusicplayer.data.QueueManager
+import com.nasserkhosravi.hawasilmusicplayer.data.UIMediaCommand
 import com.nasserkhosravi.hawasilmusicplayer.data.model.QueueModel
+import com.nasserkhosravi.hawasilmusicplayer.data.persist.UserPref
 import com.nasserkhosravi.hawasilmusicplayer.view.fragment.*
 import com.nasserkhosravi.hawasilmusicplayer.view.fragment.component.FragmentLifecycleListener
 import kotlinx.android.synthetic.main.activity_main.*

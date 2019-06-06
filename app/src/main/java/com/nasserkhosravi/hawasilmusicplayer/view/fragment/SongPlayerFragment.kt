@@ -1,7 +1,6 @@
 package com.nasserkhosravi.hawasilmusicplayer.view.fragment
 
 import android.animation.ValueAnimator
-import android.graphics.Bitmap
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
@@ -110,7 +109,9 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
         refreshStatusView(model.status.isPlay())
         val art = viewModel.getArt(context!!)
         refreshTimeInfo(model.passedDuration)
-        generateColorPalletAndSetIt(art)
+        viewModel.getPalette(context!!, compositeDisposable) {
+            setPalletInView(it[0])
+        }
         Glide.with(this).load(art).apply(RequestOptions.circleCropTransform()).into(imgPlayer)
     }
 
@@ -185,21 +186,18 @@ class SongPlayerFragment : BaseFragment(), View.OnClickListener {
         setOnClickListeners(null, imgPlayStatus, imgFavorite, imgUp, imgPrevious, imgNext, imgShuffle, imgRepeat, imgPlayStatus)
     }
 
-    private fun generateColorPalletAndSetIt(bitmap: Bitmap) {
-        Palette.from(bitmap).generate { palette ->
-            //some images may not contain some profile color: like light vibrant,be careful
-            val colorL1 = ColorUtils.setAlphaComponent(palette!!.mutedSwatch!!.rgb, 60)
-            val colorL2 = ColorUtils.setAlphaComponent(palette.mutedSwatch!!.rgb, 30)
+    private fun setPalletInView(mutedSwatch: Palette.Swatch) {
+        val colorL1 = ColorUtils.setAlphaComponent(mutedSwatch.rgb, 60)
+        val colorL2 = ColorUtils.setAlphaComponent(mutedSwatch.rgb, 30)
 
-            val mDrawable = ContextCompat.getDrawable(activity!!, R.drawable.dr_circle)!!
-            val mDrawable2 = ContextCompat.getDrawable(activity!!, R.drawable.dr_circle)!!
+        val mDrawable = ContextCompat.getDrawable(activity!!, R.drawable.dr_circle)!!
+        val mDrawable2 = ContextCompat.getDrawable(activity!!, R.drawable.dr_circle)!!
 
-            flL1.background = mDrawable
-            layoutL2.background = mDrawable2
+        flL1.background = mDrawable
+        layoutL2.background = mDrawable2
 
-            mDrawable.colorFilter = PorterDuffColorFilter(colorL1, PorterDuff.Mode.SRC_IN)
-            mDrawable2.colorFilter = PorterDuffColorFilter(colorL2, PorterDuff.Mode.SRC_IN)
-        }
+        mDrawable.colorFilter = PorterDuffColorFilter(colorL1, PorterDuff.Mode.SRC_IN)
+        mDrawable2.colorFilter = PorterDuffColorFilter(colorL2, PorterDuff.Mode.SRC_IN)
     }
 
     private fun startAnimation(colorL1: Int, mDrawable: Drawable, colorL2: Int, mDrawable2: Drawable) {

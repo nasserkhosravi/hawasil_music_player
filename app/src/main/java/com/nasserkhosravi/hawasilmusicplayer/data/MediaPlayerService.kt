@@ -17,6 +17,7 @@ import com.nasserkhosravi.hawasilmusicplayer.app.App
 import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusHelper
 import com.nasserkhosravi.hawasilmusicplayer.data.audio.AudioFocusRequestCompat
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongStatus
+import com.nasserkhosravi.hawasilmusicplayer.data.persist.UserPref
 import com.nasserkhosravi.hawasilmusicplayer.di.*
 import com.nasserkhosravi.hawasilmusicplayer.getMediaMetaData
 import io.reactivex.disposables.CompositeDisposable
@@ -48,11 +49,11 @@ class MediaPlayerService : MediaBrowserServiceCompat(), MediaPlayer.OnPreparedLi
     @Inject
     lateinit var disposables: CompositeDisposable
 
+    private lateinit var manager: QueueManager
+
     override fun onAudioFocusChange(focusChange: Int) {
         manager.onAudioFocusChange(focusChange)
     }
-
-    private lateinit var manager: QueueManager
 
     override fun onCreate() {
         super.onCreate()

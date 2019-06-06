@@ -7,27 +7,27 @@
     android:background="@color/default_background"
     >
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <ImageView
         android:id="@+id/imgFavorite"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_margin="20dp"
+        android:src="@drawable/ic_favorite_border_black_24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_favorite_border_black_24dp"
         />
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <ImageView
         android:id="@+id/imgUp"
         android:layout_width="42dp"
         android:layout_height="42dp"
         android:layout_alignParentStart="true"
         android:layout_margin="20dp"
         android:rotation="180"
+        android:src="@drawable/ic_keyboard_arrow_up_black_24dp"
+        android:tint="@color/second"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp"
-        app:tint="@color/second"
         />
 
     <FrameLayout
@@ -127,11 +127,11 @@
             android:layout_marginTop="10dp"
             >
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <ImageView
                 android:id="@+id/imgPrevious"
                 style="@style/imgPlayerControlButton"
-                app:srcCompat="@drawable/ic_fast_rewind_black_24dp"
-                app:tint="@color/main_60"
+                android:src="@drawable/ic_skip_previous_black_24dp"
+                android:tint="@color/main_60"
                 />
 
             <com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout
@@ -140,30 +140,30 @@
                 app:sl_shadow_radius="5dp"
                 >
 
-                <androidx.appcompat.widget.AppCompatImageView
+                <ImageView
                     android:id="@+id/imgPlayStatus"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
                     android:background="@drawable/dr_circle_white"
                     android:backgroundTint="@android:color/white"
                     android:padding="13dp"
+                    android:src="@drawable/ic_play_arrow_black_24dp"
                     android:tint="@color/main"
-                    app:srcCompat="@drawable/ic_play_arrow_black_24dp"
                     />
 
             </com.nasserkhosravi.hawasilmusicplayer.view.ShadowLayout>
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <ImageView
                 android:id="@+id/imgNext"
                 style="@style/imgPlayerControlButton"
-                app:srcCompat="@drawable/ic_skip_next_black_24dp"
-                app:tint="@color/main_60"
+                android:src="@drawable/ic_skip_next_black_24dp"
+                android:tint="@color/main_60"
                 />
         </LinearLayout>
 
     </LinearLayout>
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <ImageView
         android:id="@+id/imgShuffle"
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -175,14 +175,14 @@
         app:tint="@color/second_l1"
         />
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <ImageView
         android:id="@+id/imgRepeat"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
+        android:src="@drawable/ic_repeat_black_24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/layoutSongController"
-        app:srcCompat="@drawable/ic_repeat_black_24dp"
         />
 </androidx.constraintlayout.widget.ConstraintLayout>

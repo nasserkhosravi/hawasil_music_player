@@ -1,6 +1,6 @@
 package com.nasserkhosravi.hawasilmusicplayer.data.model
 
-import com.nasserkhosravi.hawasilmusicplayer.data.DataFakeFactory
+import com.nasserkhosravi.hawasilmusicplayer.data.persist.DataFakeFactory
 import org.junit.Assert.*
 import org.junit.Test
 

@@ -12,7 +12,7 @@
     <color name="main">#A11550</color>
     <color name="main_15">#26A11550</color>
     <color name="main_20">#33A11550</color>
-    <color name="main_60">#99A11550</color>
+    <color name="main_60">#963C69</color>
 
     <color name="mini_seekbar">#1AFB2A81</color>
     <!--<color name="mini_seekbar">@color/main</color>-->

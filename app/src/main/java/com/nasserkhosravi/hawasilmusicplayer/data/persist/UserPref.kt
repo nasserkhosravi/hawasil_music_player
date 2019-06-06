@@ -1,4 +1,4 @@
-package com.nasserkhosravi.hawasilmusicplayer.data
+package com.nasserkhosravi.hawasilmusicplayer.data.persist
 
 import android.content.Context
 import android.content.SharedPreferences

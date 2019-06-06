@@ -2,6 +2,8 @@ package com.nasserkhosravi.hawasilmusicplayer.data
 
 import com.nasserkhosravi.hawasilmusicplayer.data.model.QueueModel
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
+import com.nasserkhosravi.hawasilmusicplayer.data.persist.DataFakeFactory
+import com.nasserkhosravi.hawasilmusicplayer.data.persist.UserPref
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
