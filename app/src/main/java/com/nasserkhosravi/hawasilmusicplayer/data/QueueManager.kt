@@ -63,6 +63,15 @@ class QueueManager private constructor() {
         }
     }
 
+    fun playByPosition(position: Int) {
+        if (position == queue!!.selectedIndex) {
+            return
+        }
+        if (position > -1 && position <= queue!!.items.size) {
+            resetReplacePlayPublish(position)
+        }
+    }
+
     fun playNext() {
         if (queue!!.isOnLastItem()) {
             resetReplacePlayPublish(0)
@@ -128,6 +137,7 @@ class QueueManager private constructor() {
         queue!!.active(position)
         playSelectedSong()
         QueueEvents.newSongPlay.onNext(queue!!.selected!!)
+        finishObserver?.dispose()
         registerFinishListener()
     }
 

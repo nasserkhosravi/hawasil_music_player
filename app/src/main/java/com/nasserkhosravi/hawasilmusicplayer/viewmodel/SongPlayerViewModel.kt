@@ -1,21 +1,13 @@
 package com.nasserkhosravi.hawasilmusicplayer.viewmodel
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.provider.MediaStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.palette.graphics.Palette
-import com.nasserkhosravi.hawasilmusicplayer.app.App
 import com.nasserkhosravi.hawasilmusicplayer.data.FavoriteManager
 import com.nasserkhosravi.hawasilmusicplayer.data.QueueEvents
 import com.nasserkhosravi.hawasilmusicplayer.data.QueueManager
 import com.nasserkhosravi.hawasilmusicplayer.data.UIMediaCommand
 import com.nasserkhosravi.hawasilmusicplayer.data.model.SongModel
-import com.nasserkhosravi.hawasilmusicplayer.data.persist.PaletteProvider
-import io.reactivex.disposables.CompositeDisposable
-import java.io.FileNotFoundException
 
 class SongPlayerViewModel : ViewModel() {
 
@@ -75,19 +67,6 @@ class SongPlayerViewModel : ViewModel() {
         shuffle.value = !shuffle.value!!
     }
 
-    fun getArt(context: Context): Bitmap {
-        val model = getCurrentSong()
-        return if (model.artUri != null) {
-            try {
-                MediaStore.Images.Media.getBitmap(context.contentResolver, model.artUri!!)
-            } catch (e: FileNotFoundException) {
-                App.get().defaultArt
-            }
-        } else {
-            App.get().defaultArt
-        }
-    }
-
     fun toggleFavorite() {
         if (favorite.value!!) {
             if (FavoriteManager.remove(getCurrentSong().id)) {
@@ -104,7 +83,4 @@ class SongPlayerViewModel : ViewModel() {
         return QueueManager.get().queue!!.selected!!
     }
 
-    fun getPalette(context: Context, compositeDisposable: CompositeDisposable, onResult: (ArrayList<Palette.Swatch>) -> Unit) {
-        PaletteProvider.getPalette(context, getCurrentSong(), compositeDisposable, onResult)
-    }
 }

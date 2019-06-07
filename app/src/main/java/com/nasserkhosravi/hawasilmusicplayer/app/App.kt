@@ -18,6 +18,7 @@ open class App : Application() {
 
     @Inject
     lateinit var jsonAdapter: Gson
+    //todo: remove these public shit memory leak cause
     val defaultArt: Bitmap by lazy {
         BitmapFactory.decodeResource(resources, R.drawable.art_default)
     }
